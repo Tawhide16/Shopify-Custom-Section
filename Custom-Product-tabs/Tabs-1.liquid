@@ -233,7 +233,7 @@
     const sizeButtons = document.querySelectorAll(`#${sectionId} .size-button`);
     
     sizeButtons.forEach((button) => {
-      // Remove any existing listeners by cloning
+      
       const newButton = button.cloneNode(true);
       button.parentNode.replaceChild(newButton, button);
       
