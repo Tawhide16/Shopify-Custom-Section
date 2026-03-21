@@ -1,12 +1,10 @@
-# Shopify-Custom-Section
+# Shopify Custom Section
 
+## 🛍 Custom Product Section
 
+### 📌 Product Size Selection → Auto Add to Cart
 
-# Custom-product-Section
-
-## Product Size Selection → Auto Add to Cart Tabs-1
-
-When a user clicks on a product size inside the product tabs, the corresponding product variant is automatically added to the cart based on the selected size.
+When a user clicks on a product size inside the product tabs, the corresponding product variant is automatically added to the cart automatically.
 
 ### 🔗 Live Website
 👉 https://your-website-link-here.com
