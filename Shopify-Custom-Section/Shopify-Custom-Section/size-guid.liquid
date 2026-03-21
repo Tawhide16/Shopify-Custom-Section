@@ -1,0 +1,503 @@
+<div class="sg-section" id="sg-{{ section.id }}">
+  <div class="sg-wrap">
+
+    <!-- Title -->
+    <div class="sg-top">
+      <h2 class="sg-title">{{ section.settings.title | default: 'Size Guide' }}</h2>
+      {% if section.settings.subtitle != blank %}
+        <p class="sg-subtitle">{{ section.settings.subtitle | default: 'Find your perfect fit.' }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Tabs + Unit Toggle Row -->
+    <div class="sg-controls">
+      <div class="sg-tabs">
+        <button class="sg-tab active" onclick="sgTab(this,'sg-men-{{ section.id }}','{{ section.id }}')">{{ section.settings.tab_men | default: 'Men' }}</button>
+        <button class="sg-tab" onclick="sgTab(this,'sg-women-{{ section.id }}','{{ section.id }}')">{{ section.settings.tab_women | default: 'Women' }}</button>
+      </div>
+      <div class="sg-unit-toggle">
+        <button class="sg-unit active" onclick="sgUnit(this,'cm','{{ section.id }}')">CM</button>
+        <button class="sg-unit" onclick="sgUnit(this,'in','{{ section.id }}')">INCHES</button>
+      </div>
+    </div>
+
+    <!-- ===== MEN PANEL ===== -->
+    <div class="sg-panel" id="sg-men-{{ section.id }}">
+      <div class="sg-layout">
+
+        <!-- LEFT: Measure Diagram Image -->
+        <div class="sg-diagram">
+          {% if section.settings.men_image %}
+            <img src="{{ section.settings.men_image | img_url: '600x900', crop: 'top' }}" alt="Men size guide diagram" class="sg-diagram-img">
+          {% else %}
+            <!-- Built-in SVG diagram if no image uploaded -->
+            <div class="sg-svg-diagram">
+              <svg viewBox="0 0 220 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Body silhouette -->
+                <ellipse cx="110" cy="52" rx="28" ry="30" stroke="#222" stroke-width="2.5" fill="#f0f0f0"/>
+                <path d="M70 95 Q60 110 55 145 L50 200 Q48 215 55 220 L65 220 L68 260 L72 340 L82 340 L88 260 L90 240 L130 240 L132 260 L138 340 L148 340 L152 260 L155 220 L165 220 Q172 215 170 200 L165 145 Q160 110 150 95 Q130 82 110 82 Q90 82 70 95Z" fill="#f0f0f0" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Legs -->
+                <path d="M72 340 L68 420 L78 420 L88 350" fill="#f0f0f0" stroke="#222" stroke-width="2.5"/>
+                <path d="M138 350 L148 420 L158 420 L152 340" fill="#f0f0f0" stroke="#222" stroke-width="2.5"/>
+
+                <!-- CHEST line -->
+                <line x1="55" y1="130" x2="165" y2="130" stroke="#E63946" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="55" cy="130" r="3.5" fill="#E63946"/>
+                <circle cx="165" cy="130" r="3.5" fill="#E63946"/>
+                <text x="172" y="134" font-size="11" fill="#E63946" font-weight="700" font-family="Helvetica,Arial,sans-serif">CHEST</text>
+
+                <!-- WAIST line -->
+                <line x1="58" y1="175" x2="162" y2="175" stroke="#2196F3" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="58" cy="175" r="3.5" fill="#2196F3"/>
+                <circle cx="162" cy="175" r="3.5" fill="#2196F3"/>
+                <text x="168" y="179" font-size="11" fill="#2196F3" font-weight="700" font-family="Helvetica,Arial,sans-serif">WAIST</text>
+
+                <!-- HIP line -->
+                <line x1="60" y1="220" x2="160" y2="220" stroke="#4CAF50" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="60" cy="220" r="3.5" fill="#4CAF50"/>
+                <circle cx="160" cy="220" r="3.5" fill="#4CAF50"/>
+                <text x="166" y="224" font-size="11" fill="#4CAF50" font-weight="700" font-family="Helvetica,Arial,sans-serif">HIP</text>
+
+                <!-- INSEAM line -->
+                <line x1="110" y1="245" x2="110" y2="415" stroke="#FF9800" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="110" cy="245" r="3.5" fill="#FF9800"/>
+                <circle cx="110" cy="415" r="3.5" fill="#FF9800"/>
+                <text x="115" y="340" font-size="11" fill="#FF9800" font-weight="700" font-family="Helvetica,Arial,sans-serif">INSEAM</text>
+
+                <!-- HEIGHT arrow -->
+                <line x1="30" y1="22" x2="30" y2="420" stroke="#9C27B0" stroke-width="1.8"/>
+                <polygon points="30,18 27,26 33,26" fill="#9C27B0"/>
+                <polygon points="30,424 27,416 33,416" fill="#9C27B0"/>
+                <text x="4" y="225" font-size="10" fill="#9C27B0" font-weight="700" font-family="Helvetica,Arial,sans-serif" transform="rotate(-90,16,225)">HEIGHT</text>
+              </svg>
+
+              <!-- Legend -->
+              <div class="sg-legend">
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#E63946"></span>Chest</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#2196F3"></span>Waist</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#4CAF50"></span>Hip</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#FF9800"></span>Inseam</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#9C27B0"></span>Height</span>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- RIGHT: Table -->
+        <div class="sg-table-side">
+          <div class="sg-table-scroll">
+            <table class="sg-table">
+              <thead>
+                <tr>
+                  <th>Size</th>
+                  <th><span class="sg-cm">Chest<br><small>cm</small></span><span class="sg-in" style="display:none">Chest<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Waist<br><small>cm</small></span><span class="sg-in" style="display:none">Waist<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Hip<br><small>cm</small></span><span class="sg-in" style="display:none">Hip<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Inseam<br><small>cm</small></span><span class="sg-in" style="display:none">Inseam<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Height<br><small>cm</small></span><span class="sg-in" style="display:none">Height<br><small>in</small></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="sg-sz">XXS</td>
+                  <td><span class="sg-cm">80–83</span><span class="sg-in" style="display:none">31.5–32.5</span></td>
+                  <td><span class="sg-cm">62–65</span><span class="sg-in" style="display:none">24.5–25.5</span></td>
+                  <td><span class="sg-cm">84–87</span><span class="sg-in" style="display:none">33–34</span></td>
+                  <td><span class="sg-cm">71–74</span><span class="sg-in" style="display:none">28–29</span></td>
+                  <td><span class="sg-cm">163–168</span><span class="sg-in" style="display:none">64–66</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XS</td>
+                  <td><span class="sg-cm">84–87</span><span class="sg-in" style="display:none">33–34</span></td>
+                  <td><span class="sg-cm">66–69</span><span class="sg-in" style="display:none">26–27</span></td>
+                  <td><span class="sg-cm">88–91</span><span class="sg-in" style="display:none">34.5–36</span></td>
+                  <td><span class="sg-cm">73–76</span><span class="sg-in" style="display:none">29–30</span></td>
+                  <td><span class="sg-cm">163–168</span><span class="sg-in" style="display:none">64–66</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">S</td>
+                  <td><span class="sg-cm">88–92</span><span class="sg-in" style="display:none">34.5–36</span></td>
+                  <td><span class="sg-cm">70–74</span><span class="sg-in" style="display:none">27.5–29</span></td>
+                  <td><span class="sg-cm">92–96</span><span class="sg-in" style="display:none">36–38</span></td>
+                  <td><span class="sg-cm">75–78</span><span class="sg-in" style="display:none">29.5–31</span></td>
+                  <td><span class="sg-cm">168–173</span><span class="sg-in" style="display:none">66–68</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">M</td>
+                  <td><span class="sg-cm">93–98</span><span class="sg-in" style="display:none">36.5–38.5</span></td>
+                  <td><span class="sg-cm">75–80</span><span class="sg-in" style="display:none">29.5–31.5</span></td>
+                  <td><span class="sg-cm">97–102</span><span class="sg-in" style="display:none">38–40</span></td>
+                  <td><span class="sg-cm">78–81</span><span class="sg-in" style="display:none">30.5–32</span></td>
+                  <td><span class="sg-cm">173–178</span><span class="sg-in" style="display:none">68–70</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">L</td>
+                  <td><span class="sg-cm">99–104</span><span class="sg-in" style="display:none">39–41</span></td>
+                  <td><span class="sg-cm">81–86</span><span class="sg-in" style="display:none">32–34</span></td>
+                  <td><span class="sg-cm">103–108</span><span class="sg-in" style="display:none">40.5–42.5</span></td>
+                  <td><span class="sg-cm">80–83</span><span class="sg-in" style="display:none">31.5–32.5</span></td>
+                  <td><span class="sg-cm">178–183</span><span class="sg-in" style="display:none">70–72</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XL</td>
+                  <td><span class="sg-cm">105–112</span><span class="sg-in" style="display:none">41.5–44</span></td>
+                  <td><span class="sg-cm">87–94</span><span class="sg-in" style="display:none">34–37</span></td>
+                  <td><span class="sg-cm">109–116</span><span class="sg-in" style="display:none">43–45.5</span></td>
+                  <td><span class="sg-cm">82–85</span><span class="sg-in" style="display:none">32.5–33.5</span></td>
+                  <td><span class="sg-cm">178–183</span><span class="sg-in" style="display:none">70–72</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XXL</td>
+                  <td><span class="sg-cm">113–120</span><span class="sg-in" style="display:none">44.5–47</span></td>
+                  <td><span class="sg-cm">95–102</span><span class="sg-in" style="display:none">37.5–40</span></td>
+                  <td><span class="sg-cm">117–124</span><span class="sg-in" style="display:none">46–49</span></td>
+                  <td><span class="sg-cm">84–87</span><span class="sg-in" style="display:none">33–34</span></td>
+                  <td><span class="sg-cm">183–188</span><span class="sg-in" style="display:none">72–74</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- How to measure tips -->
+          <div class="sg-tips">
+            <h4 class="sg-tips-title">How to Measure</h4>
+            <ul class="sg-tips-list">
+              <li><span class="sg-tip-dot" style="background:#E63946"></span><strong>Chest:</strong> Measure around the fullest part of your chest, keeping the tape horizontal under your arms.</li>
+              <li><span class="sg-tip-dot" style="background:#2196F3"></span><strong>Waist:</strong> Measure around your natural waistline — the narrowest part of your torso.</li>
+              <li><span class="sg-tip-dot" style="background:#4CAF50"></span><strong>Hip:</strong> Measure around the fullest part of your hips, approx. 20 cm below your waist.</li>
+              <li><span class="sg-tip-dot" style="background:#FF9800"></span><strong>Inseam:</strong> Measure from your crotch to the floor along the inside of your leg.</li>
+              <li><span class="sg-tip-dot" style="background:#9C27B0"></span><strong>Height:</strong> Stand straight without shoes. Measure from floor to top of your head.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== WOMEN PANEL ===== -->
+    <div class="sg-panel" id="sg-women-{{ section.id }}" style="display:none">
+      <div class="sg-layout">
+
+        <!-- LEFT: Diagram -->
+        <div class="sg-diagram">
+          {% if section.settings.women_image %}
+            <img src="{{ section.settings.women_image | img_url: '600x900', crop: 'top' }}" alt="Women size guide diagram" class="sg-diagram-img">
+          {% else %}
+            <div class="sg-svg-diagram">
+              <svg viewBox="0 0 220 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Head -->
+                <ellipse cx="110" cy="50" rx="26" ry="28" stroke="#222" stroke-width="2.5" fill="#f0f0f0"/>
+                <!-- Body with curves -->
+                <path d="M72 88 Q60 105 57 135 Q54 158 60 175 Q50 185 52 200 Q54 220 70 228 L74 340 L84 340 L90 250 L130 250 L136 340 L146 340 L150 228 Q166 220 168 200 Q170 185 160 175 Q166 158 163 135 Q160 105 148 88 Q130 76 110 76 Q90 76 72 88Z" fill="#f0f0f0" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Legs -->
+                <path d="M74 340 L70 420 L80 420 L90 255" fill="#f0f0f0" stroke="#222" stroke-width="2.5"/>
+                <path d="M130 255 L140 420 L150 420 L146 340" fill="#f0f0f0" stroke="#222" stroke-width="2.5"/>
+
+                <!-- BUST line -->
+                <line x1="56" y1="128" x2="164" y2="128" stroke="#E63946" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="56" cy="128" r="3.5" fill="#E63946"/>
+                <circle cx="164" cy="128" r="3.5" fill="#E63946"/>
+                <text x="170" y="132" font-size="11" fill="#E63946" font-weight="700" font-family="Helvetica,Arial,sans-serif">BUST</text>
+
+                <!-- WAIST line -->
+                <line x1="54" y1="172" x2="166" y2="172" stroke="#2196F3" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="54" cy="172" r="3.5" fill="#2196F3"/>
+                <circle cx="166" cy="172" r="3.5" fill="#2196F3"/>
+                <text x="172" y="176" font-size="11" fill="#2196F3" font-weight="700" font-family="Helvetica,Arial,sans-serif">WAIST</text>
+
+                <!-- HIP line -->
+                <line x1="52" y1="215" x2="168" y2="215" stroke="#4CAF50" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="52" cy="215" r="3.5" fill="#4CAF50"/>
+                <circle cx="168" cy="215" r="3.5" fill="#4CAF50"/>
+                <text x="174" y="219" font-size="11" fill="#4CAF50" font-weight="700" font-family="Helvetica,Arial,sans-serif">HIP</text>
+
+                <!-- INSEAM -->
+                <line x1="110" y1="252" x2="110" y2="415" stroke="#FF9800" stroke-width="1.8" stroke-dasharray="5 3"/>
+                <circle cx="110" cy="252" r="3.5" fill="#FF9800"/>
+                <circle cx="110" cy="415" r="3.5" fill="#FF9800"/>
+                <text x="115" y="340" font-size="11" fill="#FF9800" font-weight="700" font-family="Helvetica,Arial,sans-serif">INSEAM</text>
+
+                <!-- HEIGHT -->
+                <line x1="30" y1="22" x2="30" y2="420" stroke="#9C27B0" stroke-width="1.8"/>
+                <polygon points="30,18 27,26 33,26" fill="#9C27B0"/>
+                <polygon points="30,424 27,416 33,416" fill="#9C27B0"/>
+                <text x="4" y="225" font-size="10" fill="#9C27B0" font-weight="700" font-family="Helvetica,Arial,sans-serif" transform="rotate(-90,16,225)">HEIGHT</text>
+              </svg>
+              <div class="sg-legend">
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#E63946"></span>Bust</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#2196F3"></span>Waist</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#4CAF50"></span>Hip</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#FF9800"></span>Inseam</span>
+                <span class="sg-leg-item"><span class="sg-leg-dot" style="background:#9C27B0"></span>Height</span>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- RIGHT: Women Table -->
+        <div class="sg-table-side">
+          <div class="sg-table-scroll">
+            <table class="sg-table">
+              <thead>
+                <tr>
+                  <th>Size</th>
+                  <th><span class="sg-cm">Bust<br><small>cm</small></span><span class="sg-in" style="display:none">Bust<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Waist<br><small>cm</small></span><span class="sg-in" style="display:none">Waist<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Hip<br><small>cm</small></span><span class="sg-in" style="display:none">Hip<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Inseam<br><small>cm</small></span><span class="sg-in" style="display:none">Inseam<br><small>in</small></span></th>
+                  <th><span class="sg-cm">Height<br><small>cm</small></span><span class="sg-in" style="display:none">Height<br><small>in</small></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="sg-sz">XXS</td>
+                  <td><span class="sg-cm">76–79</span><span class="sg-in" style="display:none">30–31</span></td>
+                  <td><span class="sg-cm">58–61</span><span class="sg-in" style="display:none">23–24</span></td>
+                  <td><span class="sg-cm">82–85</span><span class="sg-in" style="display:none">32–33.5</span></td>
+                  <td><span class="sg-cm">68–71</span><span class="sg-in" style="display:none">27–28</span></td>
+                  <td><span class="sg-cm">158–163</span><span class="sg-in" style="display:none">62–64</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XS</td>
+                  <td><span class="sg-cm">80–83</span><span class="sg-in" style="display:none">31.5–32.5</span></td>
+                  <td><span class="sg-cm">62–65</span><span class="sg-in" style="display:none">24.5–25.5</span></td>
+                  <td><span class="sg-cm">86–89</span><span class="sg-in" style="display:none">34–35</span></td>
+                  <td><span class="sg-cm">70–73</span><span class="sg-in" style="display:none">27.5–29</span></td>
+                  <td><span class="sg-cm">158–163</span><span class="sg-in" style="display:none">62–64</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">S</td>
+                  <td><span class="sg-cm">84–87</span><span class="sg-in" style="display:none">33–34</span></td>
+                  <td><span class="sg-cm">66–69</span><span class="sg-in" style="display:none">26–27</span></td>
+                  <td><span class="sg-cm">90–93</span><span class="sg-in" style="display:none">35.5–36.5</span></td>
+                  <td><span class="sg-cm">72–75</span><span class="sg-in" style="display:none">28.5–29.5</span></td>
+                  <td><span class="sg-cm">163–168</span><span class="sg-in" style="display:none">64–66</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">M</td>
+                  <td><span class="sg-cm">88–92</span><span class="sg-in" style="display:none">34.5–36</span></td>
+                  <td><span class="sg-cm">70–74</span><span class="sg-in" style="display:none">27.5–29</span></td>
+                  <td><span class="sg-cm">94–98</span><span class="sg-in" style="display:none">37–38.5</span></td>
+                  <td><span class="sg-cm">74–77</span><span class="sg-in" style="display:none">29–30.5</span></td>
+                  <td><span class="sg-cm">163–168</span><span class="sg-in" style="display:none">64–66</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">L</td>
+                  <td><span class="sg-cm">93–98</span><span class="sg-in" style="display:none">36.5–38.5</span></td>
+                  <td><span class="sg-cm">75–80</span><span class="sg-in" style="display:none">29.5–31.5</span></td>
+                  <td><span class="sg-cm">99–104</span><span class="sg-in" style="display:none">39–41</span></td>
+                  <td><span class="sg-cm">76–79</span><span class="sg-in" style="display:none">30–31</span></td>
+                  <td><span class="sg-cm">168–173</span><span class="sg-in" style="display:none">66–68</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XL</td>
+                  <td><span class="sg-cm">99–104</span><span class="sg-in" style="display:none">39–41</span></td>
+                  <td><span class="sg-cm">81–86</span><span class="sg-in" style="display:none">32–34</span></td>
+                  <td><span class="sg-cm">105–110</span><span class="sg-in" style="display:none">41.5–43</span></td>
+                  <td><span class="sg-cm">78–81</span><span class="sg-in" style="display:none">31–32</span></td>
+                  <td><span class="sg-cm">168–173</span><span class="sg-in" style="display:none">66–68</span></td>
+                </tr>
+                <tr>
+                  <td class="sg-sz">XXL</td>
+                  <td><span class="sg-cm">105–112</span><span class="sg-in" style="display:none">41.5–44</span></td>
+                  <td><span class="sg-cm">87–94</span><span class="sg-in" style="display:none">34–37</span></td>
+                  <td><span class="sg-cm">111–118</span><span class="sg-in" style="display:none">43.5–46.5</span></td>
+                  <td><span class="sg-cm">80–83</span><span class="sg-in" style="display:none">31.5–32.5</span></td>
+                  <td><span class="sg-cm">173–178</span><span class="sg-in" style="display:none">68–70</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sg-tips">
+            <h4 class="sg-tips-title">How to Measure</h4>
+            <ul class="sg-tips-list">
+              <li><span class="sg-tip-dot" style="background:#E63946"></span><strong>Bust:</strong> Measure around the fullest part of your bust, keeping the tape horizontal.</li>
+              <li><span class="sg-tip-dot" style="background:#2196F3"></span><strong>Waist:</strong> Measure around your natural waistline — the narrowest part of your torso.</li>
+              <li><span class="sg-tip-dot" style="background:#4CAF50"></span><strong>Hip:</strong> Measure around the fullest part of your hips, approx. 20 cm below your waist.</li>
+              <li><span class="sg-tip-dot" style="background:#FF9800"></span><strong>Inseam:</strong> Measure from your crotch to the floor along the inside of your leg.</li>
+              <li><span class="sg-tip-dot" style="background:#9C27B0"></span><strong>Height:</strong> Stand straight without shoes. Measure from floor to top of your head.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Fit Note -->
+    {% if section.settings.fit_note != blank %}
+    <div class="sg-fitnote">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ section.settings.fit_note }}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.sg-section {
+  width: 100%;
+  background: {{ section.settings.bg_color | default: '#ffffff' }};
+  padding: 56px 0 64px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.sg-wrap {
+  max-width: {{ section.settings.max_width | default: 1400 }}px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Top */
+.sg-top { text-align: center; margin-bottom: 36px; }
+.sg-title { font-size: 26px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #111; margin: 0 0 8px; }
+.sg-subtitle { font-size: 14px; color: #666; margin: 0; }
+
+/* Controls Row */
+.sg-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; flex-wrap: wrap; gap: 12px; }
+
+/* Tabs */
+.sg-tabs { display: flex; border-bottom: 2px solid #eee; }
+.sg-tab { padding: 11px 28px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: none; background: none; color: #aaa; cursor: pointer; position: relative; transition: color .2s; }
+.sg-tab::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #111; transform: scaleX(0); transition: transform .22s ease; }
+.sg-tab.active { color: #111; }
+.sg-tab.active::after { transform: scaleX(1); }
+
+/* Unit Toggle */
+.sg-unit-toggle { display: flex; }
+.sg-unit { padding: 7px 18px; font-size: 11px; font-weight: 800; letter-spacing: .08em; border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer; transition: all .2s; }
+.sg-unit:first-child { border-radius: 4px 0 0 4px; }
+.sg-unit:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
+.sg-unit.active { background: #111; border-color: #111; color: #fff; }
+
+/* Panel */
+.sg-panel { padding-top: 32px; }
+
+/* Two-col layout */
+.sg-layout { display: grid; grid-template-columns: 280px 1fr; gap: 48px; align-items: start; }
+@media(max-width: 900px) { .sg-layout { grid-template-columns: 1fr; } }
+
+/* Diagram */
+.sg-diagram { position: sticky; top: 20px; }
+.sg-diagram-img { width: 100%; border-radius: 6px; display: block; }
+.sg-svg-diagram { background: #fafafa; border: 1.5px solid #eee; border-radius: 8px; padding: 20px 10px 16px; }
+.sg-svg-diagram svg { width: 100%; height: auto; display: block; }
+
+.sg-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 16px; justify-content: center; }
+.sg-leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #444; letter-spacing: .03em; }
+.sg-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Table */
+.sg-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1.5px solid #eee; border-radius: 6px; }
+.sg-table { width: 100%; border-collapse: collapse; min-width: 480px; font-size: 13px; }
+.sg-table thead tr { background: #111; }
+.sg-table thead th { padding: 13px 14px; font-weight: 700; letter-spacing: .04em; text-align: center; color: #fff; font-size: 11px; text-transform: uppercase; white-space: nowrap; }
+.sg-table thead th:first-child { text-align: left; }
+.sg-table thead th small { font-weight: 400; opacity: .7; font-size: 10px; letter-spacing: 0; }
+.sg-table tbody tr { border-bottom: 1px solid #f0f0f0; transition: background .15s; }
+.sg-table tbody tr:last-child { border-bottom: none; }
+.sg-table tbody tr:hover { background: #f7f7f7; }
+.sg-table tbody td { padding: 13px 14px; text-align: center; color: #444; font-size: 13px; }
+.sg-sz { font-weight: 800; color: #111; text-align: left; letter-spacing: .04em; }
+
+/* Tips */
+.sg-tips { margin-top: 28px; padding: 20px 24px; background: #f8f8f8; border-radius: 6px; }
+.sg-tips-title { font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #111; margin: 0 0 14px; }
+.sg-tips-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.sg-tips-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: #555; line-height: 1.55; }
+.sg-tip-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+
+/* Fit note */
+.sg-fitnote { display: flex; align-items: flex-start; gap: 10px; margin-top: 32px; padding: 14px 18px; background: #f5f5f5; border-left: 3px solid #111; font-size: 13px; color: #444; line-height: 1.6; border-radius: 0 4px 4px 0; }
+.sg-fitnote svg { flex-shrink: 0; margin-top: 2px; }
+</style>
+
+<script>
+function sgTab(btn, panelId, secId) {
+  var sec = document.getElementById('sg-' + secId);
+  sec.querySelectorAll('.sg-tab').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  sec.querySelectorAll('.sg-panel').forEach(function(p) { p.style.display = 'none'; });
+  var panel = document.getElementById(panelId);
+  if (panel) panel.style.display = 'block';
+}
+
+function sgUnit(btn, unit, secId) {
+  var sec = document.getElementById('sg-' + secId);
+  sec.querySelectorAll('.sg-unit').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  sec.querySelectorAll('.sg-cm').forEach(function(el) { el.style.display = unit === 'cm' ? '' : 'none'; });
+  sec.querySelectorAll('.sg-in').forEach(function(el) { el.style.display = unit === 'in' ? '' : 'none'; });
+}
+</script>
+
+{% schema %}
+{
+  "name": "Size Guide",
+  "tag": "section",
+  "class": "section-sg",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Size Guide"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Find your perfect fit with our size guide below."
+    },
+    {
+      "type": "text",
+      "id": "tab_men",
+      "label": "Men Tab Label",
+      "default": "Men"
+    },
+    {
+      "type": "text",
+      "id": "tab_women",
+      "label": "Women Tab Label",
+      "default": "Women"
+    },
+    {
+      "type": "image_picker",
+      "id": "men_image",
+      "label": "Men Diagram Image (optional)"
+    },
+    {
+      "type": "image_picker",
+      "id": "women_image",
+      "label": "Women Diagram Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "fit_note",
+      "label": "Fit Note",
+      "default": "If you are between sizes, we recommend sizing up for a more relaxed fit or sizing down for a tighter fit."
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width (px)",
+      "min": 800,
+      "max": 1800,
+      "step": 50,
+      "default": 1400
+    }
+  ],
+  "presets": [
+    {
+      "name": "Size Guide"
+    }
+  ]
+}
+{% endschema %}
