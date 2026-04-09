@@ -1,0 +1,1226 @@
+{% comment %}
+=======================================================
+  JOOVV-STYLE PRODUCT PAGE
+  ✅ Left: 2-column masonry-style image grid
+  ✅ Right: Sticky info — title, price, affirm, desc,
+           variant pickers, ATC, BUY NOW, trust badges,
+           collapsible tabs
+  📁 File: main-product.liquid (replace existing)
+  📂 Upload to: Sections folder
+=======================================================
+{% endcomment %}
+
+{{ 'product.css' | asset_url | stylesheet_tag }}
+{% if section.settings.show_zoom_button %}
+  {{ 'photoswipe.css' | asset_url | stylesheet_tag }}
+  {{ 'component-photoswipe.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+{%- if product.quantity_price_breaks_configured? -%}
+  {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+<style>
+/* ════════════════════════════════════════
+   JOOVV PRODUCT PAGE LAYOUT
+════════════════════════════════════════ */
+.jp-page {
+  max-width: {{ section.settings.max_width }}px;
+  margin: 0 auto;
+  padding: {{ section.settings.padding_top }}px {{ section.settings.side_padding }}px {{ section.settings.padding_bottom }}px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) {{ section.settings.info_width }}px;
+  gap: {{ section.settings.col_gap }}px;
+  align-items: start;
+}
+
+/* ════════════════════════════════════════
+   LEFT — Image Grid (2 columns)
+════════════════════════════════════════ */
+.jp-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: {{ section.settings.img_gap }}px;
+}
+
+.jp-img-item {
+  border-radius: {{ section.settings.img_radius }}px;
+  overflow: hidden;
+  background: #f5f5f5;
+  cursor: zoom-in;
+}
+
+.jp-img-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.jp-img-item:hover img { transform: scale(1.03); }
+
+.jp-img-item--featured {
+  grid-column: 1 / -1;
+}
+.jp-img-item--tall {
+  aspect-ratio: 3/4;
+}
+.jp-img-item--square {
+  aspect-ratio: 1/1;
+}
+
+/* ════════════════════════════════════════
+   RIGHT — Sticky Info Panel
+════════════════════════════════════════ */
+.jp-info {
+  position: sticky;
+  top: {{ section.settings.sticky_top }}px;
+}
+
+/* ── Title ── */
+.jp-title {
+  font-size: clamp(24px, 2.5vw, 38px);
+  font-weight: 800;
+  color: {{ section.settings.title_color }};
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* ── Price ── */
+.jp-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.jp-price {
+  font-size: 20px;
+  font-weight: 600;
+  color: {{ section.settings.price_color }};
+}
+.jp-price-compare {
+  font-size: 16px;
+  color: #999;
+  text-decoration: line-through;
+}
+.jp-price-help {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #aaa;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #777;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+/* ── Affirm / Financing text ── */
+.jp-affirm {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.jp-affirm a {
+  color: {{ section.settings.link_color }};
+  text-decoration: underline;
+}
+
+/* ── Description ── */
+.jp-desc {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: {{ section.settings.desc_color }};
+  margin-bottom: 24px;
+}
+
+/* ── Variant Label Row ── */
+.jp-variant-group {
+  margin-bottom: 18px;
+}
+.jp-variant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.jp-variant-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: {{ section.settings.label_color }};
+}
+.jp-size-guide {
+  font-size: 11px;
+  color: {{ section.settings.link_color }};
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Variant Buttons ── */
+.jp-variant-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.jp-variant-btn {
+  padding: 10px 20px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+  border-radius: {{ section.settings.btn_radius }}px;
+}
+.jp-variant-btn:hover {
+  border-color: #111;
+}
+.jp-variant-btn.is-selected {
+  border-color: #111111;
+  background: #fff;
+  color: #111111;
+}
+.jp-variant-btn.is-unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* ════════════════════════════════════════
+   SUGGESTION CARDS
+════════════════════════════════════════ */
+.jp-suggest {
+  margin-bottom: 20px;
+}
+.jp-suggest-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 10px;
+}
+.jp-suggest-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.jp-suggest-card {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.jp-suggest-card:hover {
+  border-color: #111;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.jp-suggest-card.is-added {
+  border-color: #111;
+  background: #fafafa;
+}
+.jp-suggest-card__img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #f5f5f5;
+}
+.jp-suggest-card__img-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, #f0f0f0, #e4e4e4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jp-suggest-card__img-placeholder svg {
+  width: 36px;
+  height: 36px;
+  opacity: 0.3;
+}
+.jp-suggest-card__body {
+  padding: 10px 10px 12px;
+}
+.jp-suggest-card__title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 3px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jp-suggest-card__price {
+  font-size: 11px;
+  color: #555;
+  margin: 0 0 10px;
+}
+.jp-suggest-card__btn {
+  width: 100%;
+  padding: 8px 10px;
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.jp-suggest-card__btn:hover {
+  background: #111;
+  color: #fff;
+}
+.jp-suggest-card.is-added .jp-suggest-card__btn {
+  background: #111;
+  color: #fff;
+}
+.jp-suggest-card__btn-icon {
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+.jp-suggest-card.is-added .jp-suggest-card__btn-icon {
+  content: '✓';
+}
+
+/* ── ATC & Buy Now Button Wrapper ── */
+.jp-atc-wrap {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Add to Cart Button — BLACK ── */
+.jp-atc-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: {{ section.settings.btn_radius }}px;
+  transition: opacity 0.2s;
+}
+.jp-atc-btn:hover { opacity: 0.82; }
+.jp-atc-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Buy Now Button — Outlined ── */
+.jp-buy-now-btn {
+  width: 100%;
+  padding: 15px 24px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid #111111;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: {{ section.settings.btn_radius }}px;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
+}
+.jp-buy-now-btn:hover {
+  background: #111111;
+  color: #ffffff;
+}
+.jp-buy-now-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Shipping notice ── */
+.jp-shipping-notice {
+  text-align: center;
+  font-size: 11.5px;
+  color: {{ section.settings.link_color }};
+  text-decoration: underline;
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+
+/* ── Trust Badges ── */
+.jp-trust {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 24px;
+}
+.jp-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.jp-trust-item svg,
+.jp-trust-item img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.jp-trust-item span {
+  font-size: 10px;
+  font-weight: 600;
+  color: #444;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+}
+
+/* ── Collapsible Tabs ── */
+.jp-tabs {
+  border-top: 1px solid #e8e8e8;
+}
+.jp-tab {
+  border-bottom: 1px solid #e8e8e8;
+}
+.jp-tab-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.jp-tab-btn-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: {{ section.settings.title_color }};
+}
+.jp-tab-icon {
+  font-size: 20px;
+  font-weight: 300;
+  color: #555;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.jp-tab.is-open .jp-tab-icon {
+  transform: rotate(45deg);
+}
+.jp-tab-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.38s ease, opacity 0.3s ease;
+}
+.jp-tab.is-open .jp-tab-content {
+  max-height: 1000px;
+  opacity: 1;
+}
+.jp-tab-content-inner {
+  padding: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: {{ section.settings.desc_color }};
+}
+
+/* ── Reviews stars in tab ── */
+.jp-tab-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.jp-stars {
+  color: {{ section.settings.star_color }};
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  .jp-page {
+    grid-template-columns: 1fr;
+    padding: 20px 16px 40px;
+  }
+
+  /* Mobile: flexbox column with custom order */
+  .jp-info {
+    position: static;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .jp-title           { order: 1; }
+  .jp-price-row       { order: 2; }
+  .jp-variant-group   { order: 3; }
+  .jp-affirm          { order: 4; }
+  .jp-desc            { order: 5; }
+  .jp-suggest         { order: 6; }
+  .jp-atc-wrap        { order: 7; }
+  .jp-shipping-notice { order: 8; }
+  .jp-trust           { order: 9; }
+  .jp-tabs            { order: 10; }
+}
+
+@media (max-width: 479px) {
+  .jp-images { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+</style>
+
+{%- liquid
+  assign container = section.settings.container
+  assign layout = section.settings.layout
+  if container == 'w-full'
+    assign container = 'container-full'
+  endif
+  assign first_3d_model = product.media | where: 'media_type', 'model' | first
+  assign tab_blocks = section.blocks | where: 'type', 'collapsible_tab'
+  assign trust_blocks = section.blocks | where: 'type', 'trust_item'
+  assign variant_blocks = section.blocks | where: 'type', 'variant_group'
+-%}
+
+<div class="jp-page">
+
+  {%- comment -%} ══ LEFT — IMAGE GRID ══ {%- endcomment -%}
+  <div class="jp-images">
+    {%- for media in product.media -%}
+      {%- assign media_class = 'jp-img-item' -%}
+      <div class="{{ media_class }}">
+        {%- if media.media_type == 'image' -%}
+          {%- assign img_src = media | image_url: width: 900 -%}
+          <img
+            src="{{ img_src }}"
+            alt="{{ media.alt | default: product.title }}"
+            {% if forloop.index <= 2 %}loading="eager"{% else %}loading="lazy"{% endif %}
+          >
+        {%- elsif media.media_type == 'video' -%}
+          <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
+            {%- for source in media.sources -%}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {%- endfor -%}
+          </video>
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <div class="jp-img-item" style="background:#f0f0f0;aspect-ratio:1/1;"></div>
+    {%- endfor -%}
+  </div>
+
+  {%- comment -%} ══ RIGHT — INFO PANEL ══ {%- endcomment -%}
+  <div class="jp-info">
+
+    {%- comment -%} Title {%- endcomment -%}
+    <h1 class="jp-title">{{ product.title }}</h1>
+
+    {%- comment -%} Price {%- endcomment -%}
+    <div class="jp-price-row">
+      <span class="jp-price">
+        {{ product.selected_or_first_available_variant.price | money }}
+      </span>
+      {%- if product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price -%}
+        <span class="jp-price-compare">{{ product.selected_or_first_available_variant.compare_at_price | money }}</span>
+      {%- endif -%}
+      <span class="jp-price-help" title="Price info">?</span>
+    </div>
+
+    {%- comment -%} Variant Pickers — placed here so mobile order:3 puts them right after price {%- endcomment -%}
+    {%- unless product.has_only_default_variant -%}
+      {%- for option in product.options_with_values -%}
+        <div class="jp-variant-group">
+          <div class="jp-variant-header">
+            <span class="jp-variant-label">{{ option.name | upcase }}</span>
+            {%- if option.name == 'Size' or option.name == 'Kit' -%}
+              <button class="jp-size-guide" type="button">Size Guide</button>
+            {%- endif -%}
+          </div>
+          <div class="jp-variant-btns">
+            {%- for value in option.values -%}
+              {%- assign is_selected = false -%}
+              {%- if product.selected_or_first_available_variant.options contains value -%}
+                {%- assign is_selected = true -%}
+              {%- endif -%}
+              <button
+                class="jp-variant-btn{% if is_selected %} is-selected{% endif %}"
+                type="button"
+                data-option-position="{{ option.position }}"
+                data-option-value="{{ value | escape }}"
+              >
+                {{ value }}
+              </button>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endunless -%}
+
+    {%- comment -%} Affirm / Financing {%- endcomment -%}
+    {%- if section.settings.affirm_text != blank -%}
+      <p class="jp-affirm">{{ section.settings.affirm_text }}</p>
+    {%- endif -%}
+
+    {%- comment -%} Short Description {%- endcomment -%}
+    {%- if product.description != blank -%}
+      <div class="jp-desc">{{ product.description | strip_html | truncatewords: 60 }}</div>
+    {%- endif -%}
+
+    {%- comment -%} ══ SUGGESTION CARDS — Metafield Dynamic ══ {%- endcomment -%}
+    {%- liquid
+      assign s1 = product.metafields.custom.suggestion_1.value
+      assign s2 = product.metafields.custom.suggestion_2.value
+      assign has_suggestions = false
+      if s1 != blank or s2 != blank
+        assign has_suggestions = true
+      endif
+    -%}
+    {%- if has_suggestions -%}
+      <div class="jp-suggest">
+        <p class="jp-suggest-label">{{ section.settings.suggest_label | default: 'You May Also Need' }}</p>
+        <div class="jp-suggest-cards">
+
+          {%- comment -%} — Suggestion 1 — {%- endcomment -%}
+          {%- if s1 != blank -%}
+            {%- assign sv1 = s1.selected_or_first_available_variant -%}
+            <div class="jp-suggest-card" data-variant-id="{{ sv1.id }}" data-product-id="{{ s1.id }}">
+              {%- if s1.featured_image -%}
+                <img class="jp-suggest-card__img" src="{{ s1.featured_image | image_url: width: 400 }}" alt="{{ s1.title }}" loading="lazy">
+              {%- else -%}
+                <div class="jp-suggest-card__img-placeholder">
+                  <svg viewBox="0 0 44 44" fill="none"><rect x="6" y="6" width="32" height="32" rx="4" stroke="#ccc" stroke-width="2"/><circle cx="15" cy="15" r="4" stroke="#ccc" stroke-width="1.5"/><polyline points="6,30 16,20 24,28 30,22 38,32" stroke="#ccc" stroke-width="1.5" fill="none"/></svg>
+                </div>
+              {%- endif -%}
+              <div class="jp-suggest-card__body">
+                <p class="jp-suggest-card__title">{{ s1.title }}</p>
+                <p class="jp-suggest-card__price">{{ sv1.price | money }}</p>
+                <button class="jp-suggest-card__btn" type="button" data-suggest-atc="{{ sv1.id }}">
+                  <span class="jp-suggest-card__btn-icon">+</span>
+                  <span class="jp-suggest-card__btn-text">Add Product</span>
+                </button>
+              </div>
+            </div>
+          {%- endif -%}
+
+          {%- comment -%} — Suggestion 2 — {%- endcomment -%}
+          {%- if s2 != blank -%}
+            {%- assign sv2 = s2.selected_or_first_available_variant -%}
+            <div class="jp-suggest-card" data-variant-id="{{ sv2.id }}" data-product-id="{{ s2.id }}">
+              {%- if s2.featured_image -%}
+                <img class="jp-suggest-card__img" src="{{ s2.featured_image | image_url: width: 400 }}" alt="{{ s2.title }}" loading="lazy">
+              {%- else -%}
+                <div class="jp-suggest-card__img-placeholder">
+                  <svg viewBox="0 0 44 44" fill="none"><rect x="6" y="6" width="32" height="32" rx="4" stroke="#ccc" stroke-width="2"/><circle cx="15" cy="15" r="4" stroke="#ccc" stroke-width="1.5"/><polyline points="6,30 16,20 24,28 30,22 38,32" stroke="#ccc" stroke-width="1.5" fill="none"/></svg>
+                </div>
+              {%- endif -%}
+              <div class="jp-suggest-card__body">
+                <p class="jp-suggest-card__title">{{ s2.title }}</p>
+                <p class="jp-suggest-card__price">{{ sv2.price | money }}</p>
+                <button class="jp-suggest-card__btn" type="button" data-suggest-atc="{{ sv2.id }}">
+                  <span class="jp-suggest-card__btn-icon">+</span>
+                  <span class="jp-suggest-card__btn-text">Add Product</span>
+                </button>
+              </div>
+            </div>
+          {%- endif -%}
+
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Add to Cart + Buy Now Buttons {%- endcomment -%}
+    <div class="jp-atc-wrap">
+      {%- form 'product', product, id: 'jp-product-form', class: 'jp-form' -%}
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+        {%- comment -%} ADD TO CART — Black background, white text {%- endcomment -%}
+        <button
+          type="submit"
+          class="jp-atc-btn"
+          {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}
+        >
+          {%- if product.selected_or_first_available_variant.available -%}
+            {{ section.settings.atc_text | default: 'ADD TO CART' }}
+          {%- else -%}
+            SOLD OUT
+          {%- endif -%}
+        </button>
+      {%- endform -%}
+
+      {%- comment -%} BUY NOW — Outlined button, redirects to checkout {%- endcomment -%}
+      {%- if product.selected_or_first_available_variant.available -%}
+        <a
+          href="/cart/{{ product.selected_or_first_available_variant.id }}:1?checkout"
+          class="jp-buy-now-btn"
+          id="jp-buy-now"
+        >
+          {{ section.settings.buy_now_text | default: 'BUY NOW' }}
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Shipping Notice {%- endcomment -%}
+    {%- if section.settings.shipping_notice != blank -%}
+      <p class="jp-shipping-notice">{{ section.settings.shipping_notice }}</p>
+    {%- endif -%}
+
+    {%- comment -%} Trust Badges {%- endcomment -%}
+    <div class="jp-trust">
+      {%- for block in trust_blocks -%}
+        <div class="jp-trust-item" {{ block.shopify_attributes }}>
+          {%- if block.settings.icon_image != blank -%}
+            {%- assign trust_src = block.settings.icon_image | image_url: width: 88 -%}
+            <img src="{{ trust_src }}" alt="{{ block.settings.label }}" width="44" height="44" loading="lazy">
+          {%- else -%}
+            {%- case block.settings.icon_type -%}
+              {%- when 'medical' -%}
+              <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 12L22 6L36 12V24C36 31 29 37 22 40C15 37 8 31 8 24V12Z" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+                <line x1="22" y1="16" x2="22" y2="28" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="16" y1="22" x2="28" y2="22" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+              {%- when 'warranty' -%}
+              <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 12L22 6L36 12V24C36 31 29 37 22 40C15 37 8 31 8 24V12Z" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+                <polyline points="16,22 20,26 28,18" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {%- when 'hsa' -%}
+              <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="14" width="28" height="20" rx="3" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+                <polyline points="16,20 20,24 28,18" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="14" y1="29" x2="20" y2="29" stroke="{{ section.settings.badge_icon_color }}" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="22" y1="29" x2="30" y2="29" stroke="{{ section.settings.badge_icon_color }}" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {%- else -%}
+              <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="22" cy="22" r="14" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+                <polyline points="16,22 20,26 28,18" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            {%- endcase -%}
+          {%- endif -%}
+          <span>{{ block.settings.label }}</span>
+        </div>
+      {%- else -%}
+        <div class="jp-trust-item">
+          <svg viewBox="0 0 44 44" fill="none">
+            <path d="M8 12L22 6L36 12V24C36 31 29 37 22 40C15 37 8 31 8 24V12Z" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+            <line x1="22" y1="16" x2="22" y2="28" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="16" y1="22" x2="28" y2="22" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span>Class II<br>Medical Device</span>
+        </div>
+        <div class="jp-trust-item">
+          <svg viewBox="0 0 44 44" fill="none">
+            <path d="M8 12L22 6L36 12V24C36 31 29 37 22 40C15 37 8 31 8 24V12Z" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+            <polyline points="16,22 20,26 28,18" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>1 Year<br>Warranty</span>
+        </div>
+        <div class="jp-trust-item">
+          <svg viewBox="0 0 44 44" fill="none">
+            <rect x="8" y="14" width="28" height="20" rx="3" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2" fill="none"/>
+            <polyline points="16,20 20,24 28,18" stroke="{{ section.settings.badge_icon_color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="14" y1="29" x2="20" y2="29" stroke="{{ section.settings.badge_icon_color }}" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="22" y1="29" x2="30" y2="29" stroke="{{ section.settings.badge_icon_color }}" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span>HSA/FSA<br>Eligible</span>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- comment -%} Collapsible Tabs {%- endcomment -%}
+    <div class="jp-tabs">
+      {%- for block in tab_blocks -%}
+        <div class="jp-tab" {{ block.shopify_attributes }}>
+          <button class="jp-tab-btn" type="button" aria-expanded="false">
+            <span class="jp-tab-btn-text">
+              {%- if block.settings.show_stars -%}
+                <span class="jp-tab-stars">
+                  {{ block.settings.heading }}
+                  <span class="jp-stars">★★★★★</span>
+                </span>
+              {%- else -%}
+                {{ block.settings.heading }}
+              {%- endif -%}
+            </span>
+            <span class="jp-tab-icon">+</span>
+          </button>
+          <div class="jp-tab-content">
+            <div class="jp-tab-content-inner">
+              {%- if block.settings.content != blank -%}
+                {{ block.settings.content }}
+              {%- elsif block.settings.liquid != blank -%}
+                {{ block.settings.liquid }}
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- else -%}
+        {%- assign default_tabs = "Health Benefits,Core Features,Treatment Guidelines,Tech Specs,Accessory Description" | split: "," -%}
+        {%- for tab_name in default_tabs -%}
+          <div class="jp-tab">
+            <button class="jp-tab-btn" type="button" aria-expanded="false">
+              <span class="jp-tab-btn-text">{{ tab_name }}</span>
+              <span class="jp-tab-icon">+</span>
+            </button>
+            <div class="jp-tab-content">
+              <div class="jp-tab-content-inner">
+                <p>{{ tab_name }} content goes here. Add a Collapsible Tab block in the Theme Editor to customize.</p>
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+        <div class="jp-tab">
+          <button class="jp-tab-btn" type="button" aria-expanded="false">
+            <span class="jp-tab-btn-text jp-tab-stars">
+              Reviews ({{ product.metafields.reviews.rating_count | default: 0 }})
+              <span class="jp-stars">★★★★★</span>
+            </span>
+            <span class="jp-tab-icon">+</span>
+          </button>
+          <div class="jp-tab-content">
+            <div class="jp-tab-content-inner">
+              <p>Customer reviews will appear here.</p>
+            </div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+  </div>{%- comment -%} end .jp-info {%- endcomment -%}
+
+</div>{%- comment -%} end .jp-page {%- endcomment -%}
+
+<script>
+(function () {
+  /* ── Collapsible Tabs ── */
+  var tabs = document.querySelectorAll('.jp-tab');
+  tabs.forEach(function (tab) {
+    var btn = tab.querySelector('.jp-tab-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var isOpen = tab.classList.contains('is-open');
+      tabs.forEach(function (t) { t.classList.remove('is-open'); t.querySelector('.jp-tab-btn') && t.querySelector('.jp-tab-btn').setAttribute('aria-expanded','false'); });
+      if (!isOpen) {
+        tab.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  /* ── Suggestion Card: Add Product ── */
+  document.querySelectorAll('.jp-suggest-card__btn').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var variantId = btn.dataset.suggestAtc;
+      if (!variantId) return;
+
+      var card = btn.closest('.jp-suggest-card');
+      var btnText = btn.querySelector('.jp-suggest-card__btn-text');
+      var btnIcon = btn.querySelector('.jp-suggest-card__btn-icon');
+
+      /* Optimistic UI */
+      btn.disabled = true;
+
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.id) {
+          card.classList.add('is-added');
+          if (btnIcon) btnIcon.textContent = '✓';
+          if (btnText) btnText.textContent = 'Added!';
+          /* Update cart count bubble if present */
+          var countEl = document.querySelector('.cart-count-bubble, .cart-item-count, [data-cart-count]');
+          if (countEl) {
+            var current = parseInt(countEl.textContent) || 0;
+            countEl.textContent = current + 1;
+          }
+          /* Reset after 3s */
+          setTimeout(function () {
+            card.classList.remove('is-added');
+            if (btnIcon) btnIcon.textContent = '+';
+            if (btnText) btnText.textContent = 'Add Product';
+            btn.disabled = false;
+          }, 3000);
+        } else {
+          btn.disabled = false;
+        }
+      })
+      .catch(function () { btn.disabled = false; });
+    });
+  });
+
+  /* ── Variant Picker ── */
+  var variantBtns = document.querySelectorAll('.jp-variant-btn');
+  variantBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pos = btn.dataset.optionPosition;
+      document.querySelectorAll('.jp-variant-btn[data-option-position="' + pos + '"]').forEach(function (b) {
+        b.classList.remove('is-selected');
+      });
+      btn.classList.add('is-selected');
+
+      var selectedOptions = [];
+      [1, 2, 3].forEach(function (p) {
+        var sel = document.querySelector('.jp-variant-btn[data-option-position="' + p + '"].is-selected');
+        if (sel) selectedOptions.push(sel.dataset.optionValue);
+      });
+
+      var variantData = {{ product.variants | json }};
+      var matched = variantData.find(function (v) {
+        return v.options.every(function (opt, i) {
+          return !selectedOptions[i] || opt === selectedOptions[i];
+        });
+      });
+
+      if (matched) {
+        /* Update hidden input */
+        var input = document.querySelector('#jp-product-form input[name="id"]');
+        if (input) input.value = matched.id;
+
+        /* Update price */
+        var priceEl = document.querySelector('.jp-price');
+        if (priceEl) {
+          priceEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: '{{ cart.currency.iso_code }}' }).format(matched.price / 100);
+        }
+
+        /* Update ATC button */
+        var atcBtn = document.querySelector('.jp-atc-btn');
+        if (atcBtn) {
+          atcBtn.disabled = !matched.available;
+          atcBtn.textContent = matched.available ? '{{ section.settings.atc_text | default: "ADD TO CART" }}' : 'SOLD OUT';
+        }
+
+        /* Update Buy Now link */
+        var buyNowBtn = document.querySelector('#jp-buy-now');
+        if (buyNowBtn) {
+          buyNowBtn.href = '/cart/' + matched.id + ':1?checkout';
+          buyNowBtn.style.display = matched.available ? 'block' : 'none';
+        }
+      }
+    });
+  });
+})();
+</script>
+
+{%- if section.settings.show_zoom_button -%}
+  <script src="{{ 'photoswipe.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{% if product.media.size > 0 %}
+  <script src="{{ 'product-media.js' | asset_url }}" defer="defer"></script>
+{% endif %}
+{%- if first_3d_model -%}
+  <script type="application/json" id="ModelJSON-{{ product.id }}">
+    {{ product.media | where: 'media_type', 'model' | json }}
+  </script>
+  <script src="{{ 'product-model.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- render 'product-data' -%}
+
+{% schema %}
+{
+  "name": "Joovv Product Page",
+  "tag": "section",
+  "settings": [
+
+    { "type": "header", "content": "📐 Layout" },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Page max width",
+      "min": 1000, "max": 1800, "step": 20, "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "label": "Left & Right padding",
+      "min": 0, "max": 100, "step": 4, "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0, "max": 120, "step": 4, "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0, "max": 120, "step": 4, "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "col_gap",
+      "label": "Gap between image & info",
+      "min": 0, "max": 120, "step": 4, "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "info_width",
+      "label": "Info panel width",
+      "min": 300, "max": 700, "step": 10, "unit": "px",
+      "default": 520
+    },
+    {
+      "type": "range",
+      "id": "sticky_top",
+      "label": "Sticky top offset",
+      "min": 0, "max": 200, "step": 4, "unit": "px",
+      "default": 80
+    },
+
+    { "type": "header", "content": "🖼️ Image Grid" },
+    {
+      "type": "range",
+      "id": "img_gap",
+      "label": "Gap between images",
+      "min": 0, "max": 40, "step": 2, "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "img_radius",
+      "label": "Image border radius",
+      "min": 0, "max": 24, "step": 2, "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "show_zoom_button",
+      "label": "Enable image zoom",
+      "default": false
+    },
+
+    { "type": "header", "content": "🎨 Colors" },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "price_color",
+      "label": "Price color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "desc_color",
+      "label": "Description color",
+      "default": "#444444"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Variant label color",
+      "default": "#888888"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star rating color",
+      "default": "#e84040"
+    },
+    {
+      "type": "color",
+      "id": "badge_icon_color",
+      "label": "Trust badge icon color",
+      "default": "#e84040"
+    },
+
+    { "type": "header", "content": "🔘 Add to Cart Button" },
+    {
+      "type": "text",
+      "id": "atc_text",
+      "label": "Add to Cart button text",
+      "default": "ADD TO CART"
+    },
+    {
+      "type": "text",
+      "id": "buy_now_text",
+      "label": "Buy Now button text",
+      "default": "BUY NOW"
+    },
+    {
+      "type": "range",
+      "id": "btn_radius",
+      "label": "Button border radius",
+      "min": 0, "max": 50, "step": 2, "unit": "px",
+      "default": 2
+    },
+
+    { "type": "header", "content": "✏️ Text Content" },
+    {
+      "type": "text",
+      "id": "suggest_label",
+      "label": "Suggestion section label",
+      "default": "You May Also Need"
+    },
+    {
+      "type": "text",
+      "id": "affirm_text",
+      "label": "Financing text (Affirm / Klarna)",
+      "default": "Starting at $46/mo or 0% APR with Affirm. See if you qualify"
+    },
+    {
+      "type": "text",
+      "id": "shipping_notice",
+      "label": "Shipping notice text",
+      "default": "Order Ships - Within 5 Business Days"
+    },
+
+    { "type": "header", "content": "General" },
+    {
+      "type": "select",
+      "id": "container",
+      "label": "Container type",
+      "default": "container",
+      "options": [
+        { "value": "container-fluid", "label": "Default" },
+        { "value": "w-full", "label": "Full width" },
+        { "value": "container", "label": "Use container box" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "layout-6",
+      "options": [
+        { "value": "layout-4", "label": "Standard" },
+        { "value": "layout-6", "label": "Slider vertical" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_history_state",
+      "label": "Enable history state",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "🛡️ Trust Badge",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon_type",
+          "label": "Icon type",
+          "default": "check",
+          "options": [
+            { "value": "medical", "label": "Medical / Cross" },
+            { "value": "warranty", "label": "Warranty / Shield check" },
+            { "value": "hsa", "label": "HSA/FSA / Card" },
+            { "value": "check", "label": "Circle check" }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Custom icon image (overrides icon type)"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "1 Year Warranty"
+        }
+      ]
+    },
+    {
+      "type": "collapsible_tab",
+      "name": "📋 Collapsible Tab",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Tab heading",
+          "default": "Health Benefits"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_stars",
+          "label": "Show star rating (for Reviews tab)",
+          "default": false
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Tab content"
+        },
+        {
+          "type": "liquid",
+          "id": "liquid",
+          "label": "Content (Liquid)",
+          "info": "Example: {{ product.description }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Joovv Product Page",
+      "blocks": [
+        { "type": "trust_item", "settings": { "icon_type": "medical", "label": "Class II Medical Device" } },
+        { "type": "trust_item", "settings": { "icon_type": "warranty", "label": "1 Year Warranty" } },
+        { "type": "trust_item", "settings": { "icon_type": "hsa", "label": "HSA/FSA Eligible" } },
+        { "type": "collapsible_tab", "settings": { "heading": "Health Benefits" } },
+        { "type": "collapsible_tab", "settings": { "heading": "Core Features" } },
+        { "type": "collapsible_tab", "settings": { "heading": "Treatment Guidelines" } },
+        { "type": "collapsible_tab", "settings": { "heading": "Reviews (241)", "show_stars": true } },
+        { "type": "collapsible_tab", "settings": { "heading": "Tech Specs" } },
+        { "type": "collapsible_tab", "settings": { "heading": "Accessory Description" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
