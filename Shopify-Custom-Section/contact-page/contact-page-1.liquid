@@ -1,0 +1,890 @@
+{%- liquid
+  assign st = section.settings
+
+  assign animation_effect = settings.animations
+  assign animated = false
+  if animation_effect != 'none'
+    assign animated = true
+    if section.settings.animations != 'inherit'
+      assign animation_effect = section.settings.animations
+    endif
+  endif
+
+  assign container = section.settings.container
+  if container == 'w-full'
+    assign container = 'container-full'
+  endif
+-%}
+
+<style>
+  .m-contact-redesign {
+    --primary-color: {{ st.primary_color | default: '#1a0000' }};
+    --accent-color: {{ st.accent_color | default: '#800020' }};
+    --accent-hover: {{ st.accent_hover_color | default: '#a0002a' }};
+    --text-primary: {{ st.text_primary_color | default: '#1a0000' }};
+    --text-secondary: {{ st.text_secondary_color | default: '#666666' }};
+    --input-bg: {{ st.input_bg_color | default: '#f5f5f5' }};
+    --input-border: {{ st.input_border_color | default: '#e0e0e0' }};
+    --card-bg: {{ st.card_bg_color | default: '#ffffff' }};
+    --card-shadow: {{ st.card_shadow | default: '0 8px 40px rgba(0,0,0,0.10)' }};
+    --card-radius: {{ st.card_radius | default: '20' }}px;
+    --font-heading: {{ st.font_heading | default: 'Georgia, serif' }};
+    --font-body: {{ st.font_body | default: 'system-ui, sans-serif' }};
+    --section-bg: {{ st.section_bg_color | default: '#f0eeee' }};
+    --label-color: {{ st.label_color | default: '#888888' }};
+    --social-bg: {{ st.social_icon_bg | default: '#1a0000' }};
+    --social-icon-color: {{ st.social_icon_color | default: '#ffffff' }};
+    --button-text-color: {{ st.button_text_color | default: '#ffffff' }};
+    --divider-color: {{ st.divider_color | default: '#e8e0e0' }};
+    padding: {{ st.section_padding_top | default: 60 }}px 0 {{ st.section_padding_bottom | default: 60 }}px;
+    background-color: var(--section-bg);
+    font-family: var(--font-body);
+  }
+
+  .m-contact-redesign .m-contact-card {
+    background: var(--card-bg);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    overflow: hidden;
+    min-height: 420px;
+  }
+
+  /* LEFT PANEL */
+  .m-contact-redesign .m-contact-left {
+    width: 38%;
+    padding: {{ st.inner_padding | default: 48 }}px {{ st.inner_padding | default: 48 }}px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--divider-color);
+    background: var(--card-bg);
+  }
+
+  .m-contact-redesign .m-contact-info-group {
+    margin-bottom: 28px;
+  }
+
+  .m-contact-redesign .m-contact-info-label {
+    font-size: 13px;
+    color: var(--label-color);
+    font-family: var(--font-body);
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+    display: block;
+  }
+
+  .m-contact-redesign .m-contact-info-value {
+    font-size: {{ st.info_font_size | default: 18 }}px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .m-contact-redesign .m-contact-info-value a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .m-contact-redesign .m-contact-info-value a:hover {
+    color: var(--accent-color);
+  }
+
+  /* SOCIAL ICONS */
+  .m-contact-redesign .m-contact-socials {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 32px;
+  }
+
+  .m-contact-redesign .m-contact-social-link {
+    width: {{ st.social_icon_size | default: 40 }}px;
+    height: {{ st.social_icon_size | default: 40 }}px;
+    border-radius: 50%;
+    background: var(--social-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+    text-decoration: none;
+  }
+
+  .m-contact-redesign .m-contact-social-link:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+  }
+
+  .m-contact-redesign .m-contact-social-link svg {
+    fill: var(--social-icon-color);
+    color: var(--social-icon-color);
+    width: 16px;
+    height: 16px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* RIGHT PANEL - FORM */
+  .m-contact-redesign .m-contact-right {
+    width: 62%;
+    padding: {{ st.inner_padding | default: 48 }}px {{ st.inner_padding | default: 48 }}px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .m-contact-redesign .m-contact-form-title {
+    font-size: {{ st.form_title_size | default: 28 }}px;
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  .m-contact-redesign .m-contact-form-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 28px 0;
+    line-height: 1.6;
+  }
+
+  .m-contact-redesign .m-contact-form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .m-contact-redesign .m-contact-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .m-contact-redesign .m-contact-field label {
+    font-size: 13px;
+    color: var(--label-color);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .m-contact-redesign .m-contact-field input,
+  .m-contact-redesign .m-contact-field textarea {
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: {{ st.input_radius | default: 12 }}px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .m-contact-redesign .m-contact-field input::placeholder,
+  .m-contact-redesign .m-contact-field textarea::placeholder {
+    color: #bbbbbb;
+  }
+
+  .m-contact-redesign .m-contact-field input:focus,
+  .m-contact-redesign .m-contact-field textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.10);
+  }
+
+  .m-contact-redesign .m-contact-field textarea {
+    resize: vertical;
+    min-height: {{ st.textarea_height | default: 120 }}px;
+  }
+
+  .m-contact-redesign .m-contact-message-field {
+    margin-bottom: 20px;
+  }
+
+  .m-contact-redesign .m-contact-submit {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: {{ st.button_radius | default: 50 }}px;
+    padding: 15px 36px;
+    font-size: {{ st.button_font_size | default: 15 }}px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .m-contact-redesign .m-contact-submit:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(128,0,32,0.25);
+  }
+
+  /* Success / Error */
+  .m-contact-redesign .form-success {
+    background: #f0fff4;
+    border: 1px solid #68d391;
+    color: #276749;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .m-contact-redesign .form-errors {
+    background: #fff5f5;
+    border: 1px solid #fc8181;
+    color: #c53030;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  /* Phone field full width */
+  .m-contact-redesign .m-contact-phone-row {
+    margin-bottom: 16px;
+  }
+
+  /* Checkbox */
+  .m-contact-redesign .m-contact-signup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .m-contact-redesign .m-contact-signup input[type="checkbox"] {
+    accent-color: var(--accent-color);
+    width: 16px;
+    height: 16px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .m-contact-redesign .m-contact-card {
+      flex-direction: column;
+    }
+    .m-contact-redesign .m-contact-left,
+    .m-contact-redesign .m-contact-right {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--divider-color);
+      padding: 32px 24px;
+    }
+    .m-contact-redesign .m-contact-right {
+      border-bottom: none;
+    }
+    .m-contact-redesign .m-contact-form-row {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+</style>
+
+<section
+  data-section-type="contact-page"
+  data-section-id="{{ section.id }}"
+  class="m-contact-redesign"
+>
+  <div class="{{ container }}">
+    <div class="m-contact-card{% if animated %} m-scroll-trigger animate--{{ animation_effect }}{% endif %}">
+
+      {%- comment -%} LEFT PANEL: Contact Info + Socials {%- endcomment -%}
+      <div class="m-contact-left">
+        <div>
+          {%- if st.info_email != blank -%}
+          <div class="m-contact-info-group">
+            <span class="m-contact-info-label">{{ st.label_email | default: 'Email:' }}</span>
+            <p class="m-contact-info-value">
+              <a href="mailto:{{ st.info_email }}">{{ st.info_email }}</a>
+            </p>
+          </div>
+          {%- endif -%}
+
+          {%- if st.info_phone != blank -%}
+          <div class="m-contact-info-group">
+            <span class="m-contact-info-label">{{ st.label_phone | default: 'Phone:' }}</span>
+            <p class="m-contact-info-value">
+              <a href="tel:{{ st.info_phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' }}">{{ st.info_phone }}</a>
+            </p>
+          </div>
+          {%- endif -%}
+
+          {%- if st.info_address != blank -%}
+          <div class="m-contact-info-group">
+            <span class="m-contact-info-label">{{ st.label_address | default: 'Address:' }}</span>
+            <p class="m-contact-info-value">{{ st.info_address }}</p>
+          </div>
+          {%- endif -%}
+
+          {%- if st.info_extra_label != blank and st.info_extra_value != blank -%}
+          <div class="m-contact-info-group">
+            <span class="m-contact-info-label">{{ st.info_extra_label }}</span>
+            <p class="m-contact-info-value">{{ st.info_extra_value }}</p>
+          </div>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} Social Icons {%- endcomment -%}
+        <div class="m-contact-socials">
+          {%- if settings.social_facebook_link != blank -%}
+          <a href="{{ settings.social_facebook_link }}" class="m-contact-social-link" aria-label="Facebook" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+          {%- endif -%}
+          {%- if settings.social_linkedin_link != blank -%}
+          <a href="{{ settings.social_linkedin_link }}" class="m-contact-social-link" aria-label="LinkedIn" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          {%- endif -%}
+          {%- if settings.social_twitter_link != blank -%}
+          <a href="{{ settings.social_twitter_link }}" class="m-contact-social-link" aria-label="X (Twitter)" target="_blank" rel="noopener">
+            {%- comment -%} Official X (formerly Twitter) logo {%- endcomment -%}
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          {%- endif -%}
+          {%- if settings.social_instagram_link != blank -%}
+          <a href="{{ settings.social_instagram_link }}" class="m-contact-social-link" aria-label="Instagram" target="_blank" rel="noopener">
+            {%- comment -%} Instagram icon — fully filled, clearly visible {%- endcomment -%}
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+            </svg>
+          </a>
+          {%- endif -%}
+          {%- if settings.social_youtube_link != blank -%}
+          <a href="{{ settings.social_youtube_link }}" class="m-contact-social-link" aria-label="YouTube" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--social-bg)"/></svg>
+          </a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- comment -%} RIGHT PANEL: Form {%- endcomment -%}
+      <div class="m-contact-right">
+        {%- if st.title != blank -%}
+        <h3 class="m-contact-form-title">{{ st.title }}</h3>
+        {%- endif -%}
+        {%- if st.description != blank -%}
+        <div class="m-contact-form-desc rte">{{ st.description }}</div>
+        {%- endif -%}
+
+        {%- form 'contact' -%}
+          {%- capture success_message -%}{{ 'contact.form.post_success' | t }}{%- endcapture -%}
+          {% render 'form__success', form: form, success_message: success_message %}
+          {% render 'form__error', form: form %}
+
+          {%- comment -%} Name + Email row {%- endcomment -%}
+          <div class="m-contact-form-row">
+            {%- if section.settings.show_name -%}
+            <div class="m-contact-field">
+              <label for="inputName">{{ st.label_field_name | default: 'Your Name' }}</label>
+              <input
+                type="text"
+                name="contact[name]"
+                id="inputName"
+                value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                placeholder="{{ st.placeholder_name | default: 'Your name' }}"
+              >
+            </div>
+            {%- endif -%}
+            <div class="m-contact-field">
+              <label for="inputEmail">{{ st.label_field_email | default: 'Email address' }}</label>
+              <input
+                type="email"
+                name="contact[email]"
+                id="inputEmail"
+                required
+                autocorrect="off"
+                autocapitalize="off"
+                value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                placeholder="{{ st.placeholder_email | default: 'Your email address' }}"
+              >
+            </div>
+          </div>
+
+          {%- if section.settings.show_phone -%}
+          <div class="m-contact-phone-row m-contact-field">
+            <label for="inputPhone">{{ st.label_field_phone | default: 'Phone number' }}</label>
+            <input
+              type="tel"
+              name="contact[phone]"
+              id="inputPhone"
+              autocorrect="off"
+              autocapitalize="off"
+              value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+              placeholder="{{ st.placeholder_phone | default: 'Your phone number' }}"
+            >
+          </div>
+          {%- endif -%}
+
+          {%- comment -%} Message {%- endcomment -%}
+          <div class="m-contact-message-field m-contact-field">
+            <label for="textareaMessage">{{ st.label_field_message | default: 'Message' }}</label>
+            <textarea
+              name="contact[body]"
+              id="textareaMessage"
+              required
+              placeholder="{{ st.placeholder_message | default: 'Write something...' }}"
+            >{%- if form.body -%}{{ form.body }}{%- endif -%}</textarea>
+          </div>
+
+          {%- if section.settings.show_signup_email -%}
+          <label class="m-contact-signup">
+            <input type="checkbox" name="contact[saveInfo]">
+            <span>{{ st.signup_label | default: 'Save my information for next time' }}</span>
+          </label>
+          {%- endif -%}
+
+          <button type="submit" class="m-contact-submit">
+            {{ st.button_label | default: 'Send Message' }}
+          </button>
+        {%- endform -%}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact form",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout & Container"
+    },
+    {
+      "type": "select",
+      "id": "container",
+      "label": "Container type",
+      "default": "container",
+      "options": [
+        { "value": "container-fluid", "label": "Default (fluid)" },
+        { "value": "w-full", "label": "Full width" },
+        { "value": "container", "label": "Boxed container" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Section padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Section padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner card padding",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Page background color",
+      "default": "#f0eeee"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Primary (dark) color",
+      "default": "#1a0000"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent / button color (maroon)",
+      "default": "#800020"
+    },
+    {
+      "type": "color",
+      "id": "accent_hover_color",
+      "label": "Accent hover color",
+      "default": "#a0002a"
+    },
+    {
+      "type": "color",
+      "id": "text_primary_color",
+      "label": "Primary text color",
+      "default": "#1a0000"
+    },
+    {
+      "type": "color",
+      "id": "text_secondary_color",
+      "label": "Secondary text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Field label & info label color",
+      "default": "#888888"
+    },
+    {
+      "type": "color",
+      "id": "input_bg_color",
+      "label": "Input background color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "input_border_color",
+      "label": "Input border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Panel divider color",
+      "default": "#e8e0e0"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "text",
+      "id": "font_heading",
+      "label": "Heading font (CSS font-family)",
+      "default": "Georgia, serif",
+      "info": "e.g. 'Georgia, serif' or 'Playfair Display, serif'"
+    },
+    {
+      "type": "text",
+      "id": "font_body",
+      "label": "Body font (CSS font-family)",
+      "default": "system-ui, sans-serif"
+    },
+    {
+      "type": "range",
+      "id": "form_title_size",
+      "label": "Form title font size",
+      "min": 18,
+      "max": 48,
+      "step": 1,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "info_font_size",
+      "label": "Info value font size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Card Style"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "text",
+      "id": "card_shadow",
+      "label": "Card box shadow (CSS)",
+      "default": "0 8px 40px rgba(0,0,0,0.10)"
+    },
+    {
+      "type": "range",
+      "id": "input_radius",
+      "label": "Input field border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "textarea_height",
+      "label": "Message field min height",
+      "min": 80,
+      "max": 300,
+      "step": 10,
+      "default": 120,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "default": "Send Message"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button border radius (pill = 50)",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "default": 50,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "label": "Button font size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "default": 15,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Contact Info (Left Panel)"
+    },
+    {
+      "type": "text",
+      "id": "label_email",
+      "label": "Email label",
+      "default": "Email:"
+    },
+    {
+      "type": "text",
+      "id": "info_email",
+      "label": "Email address",
+      "default": "hello@yourstore.com"
+    },
+    {
+      "type": "text",
+      "id": "label_phone",
+      "label": "Phone label",
+      "default": "Phone:"
+    },
+    {
+      "type": "text",
+      "id": "info_phone",
+      "label": "Phone number",
+      "default": "(123) 456 7890"
+    },
+    {
+      "type": "text",
+      "id": "label_address",
+      "label": "Address label",
+      "default": "Address:"
+    },
+    {
+      "type": "textarea",
+      "id": "info_address",
+      "label": "Address",
+      "default": "123 Innovation Avenue, Suite 456\nTech District"
+    },
+    {
+      "type": "text",
+      "id": "info_extra_label",
+      "label": "Extra info label (optional)"
+    },
+    {
+      "type": "text",
+      "id": "info_extra_value",
+      "label": "Extra info value (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Social Icons"
+    },
+    {
+      "type": "color",
+      "id": "social_icon_bg",
+      "label": "Social icon background",
+      "default": "#1a0000"
+    },
+    {
+      "type": "color",
+      "id": "social_icon_color",
+      "label": "Social icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "social_icon_size",
+      "label": "Social icon button size",
+      "min": 28,
+      "max": 60,
+      "step": 2,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Form Fields"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Form title",
+      "default": "Get in touch"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Form description",
+      "default": "<p>We'd love to hear from you. Fill in the form and we'll be in touch shortly.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_name",
+      "label": "Show Name field",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show Phone field",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_signup_email",
+      "label": "Show email sign-up checkbox",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "signup_label",
+      "label": "Sign-up checkbox label",
+      "default": "Save my information for next time"
+    },
+    {
+      "type": "header",
+      "content": "Placeholder Text"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_name",
+      "label": "Name placeholder",
+      "default": "Your name"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_email",
+      "label": "Email placeholder",
+      "default": "Your email address"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_phone",
+      "label": "Phone placeholder",
+      "default": "Your phone number"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_message",
+      "label": "Message placeholder",
+      "default": "Write something...."
+    },
+    {
+      "type": "header",
+      "content": "Field Labels"
+    },
+    {
+      "type": "text",
+      "id": "label_field_name",
+      "label": "Name field label",
+      "default": "Your Name"
+    },
+    {
+      "type": "text",
+      "id": "label_field_email",
+      "label": "Email field label",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "label_field_phone",
+      "label": "Phone field label",
+      "default": "Phone number"
+    },
+    {
+      "type": "text",
+      "id": "label_field_message",
+      "label": "Message field label",
+      "default": "Message"
+    },
+    {
+      "type": "header",
+      "content": "Animations"
+    },
+    {
+      "type": "select",
+      "id": "animations",
+      "label": "Visible in the view animation",
+      "default": "inherit",
+      "options": [
+        { "value": "inherit", "label": "Inherit global setting" },
+        { "value": "fade-in", "label": "Fade in" },
+        { "value": "fade-in-up", "label": "Fade in up" },
+        { "value": "fade-in-left", "label": "Fade in left" },
+        { "value": "fade-in-right", "label": "Fade in right" }
+      ]
+    }
+  ],
+  "blocks": [],
+  "presets": [
+    {
+      "name": "Contact form"
+    }
+  ]
+}
+{% endschema %}
