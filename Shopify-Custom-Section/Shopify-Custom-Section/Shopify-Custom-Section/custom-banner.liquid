@@ -1,0 +1,641 @@
+{% assign section_id = section.id %}
+{% assign s = section.settings %}
+
+<section class="hero-banner hero-banner--{{ section_id }}">
+
+  {%- comment -%} Desktop Background (video or image) {%- endcomment -%}
+  {% if s.video_url != blank %}
+    <video
+      class="hero-banner__video hero-banner__bg--desktop"
+      src="{{ s.video_url }}"
+      autoplay
+      muted
+      loop
+      playsinline
+      id="hero-video-{{ section_id }}"
+    ></video>
+  {% elsif s.bg_image != blank %}
+    <div
+      class="hero-banner__image hero-banner__bg--desktop"
+      style="background-image: url('{{ s.bg_image | image_url: width: 2400 }}'); background-position: {{ s.image_position | default: 'center center' }};"
+      role="img"
+      aria-label="{{ s.bg_image_alt | default: s.heading }}"
+    ></div>
+  {% else %}
+    <div class="hero-banner__image hero-banner__bg--desktop hero-banner__image--placeholder"></div>
+  {% endif %}
+
+  {%- comment -%} Mobile Background Image (shows only on mobile if set) {%- endcomment -%}
+  {% if s.mobile_image != blank %}
+    <div
+      class="hero-banner__image hero-banner__bg--mobile"
+      style="background-image: url('{{ s.mobile_image | image_url: width: 1200 }}'); background-position: {{ s.mobile_image_position | default: 'center center' }};"
+      role="img"
+      aria-label="{{ s.bg_image_alt | default: s.heading }}"
+    ></div>
+  {% elsif s.bg_image != blank %}
+    {%- comment -%} Fallback: use desktop image on mobile too if no mobile image set {%- endcomment -%}
+    <div
+      class="hero-banner__image hero-banner__bg--mobile"
+      style="background-image: url('{{ s.bg_image | image_url: width: 1200 }}'); background-position: {{ s.mobile_image_position | default: 'center center' }};"
+      role="img"
+      aria-label="{{ s.bg_image_alt | default: s.heading }}"
+    ></div>
+  {% else %}
+    <div class="hero-banner__image hero-banner__bg--mobile hero-banner__image--placeholder"></div>
+  {% endif %}
+
+  {%- comment -%} Overlay {%- endcomment -%}
+  {% unless s.overlay_disabled %}
+    <div class="hero-banner__overlay"></div>
+  {% endunless %}
+
+  {%- comment -%} Content {%- endcomment -%}
+  <div class="hero-banner__content">
+    {% if s.heading != blank %}
+      <h2 class="hero-banner__heading">{{ s.heading }}</h2>
+    {% endif %}
+
+    {% if s.subheading != blank %}
+      <p class="hero-banner__subheading">{{ s.subheading }}</p>
+    {% endif %}
+
+    {% if s.description != blank %}
+      <p class="hero-banner__desc">{{ s.description }}</p>
+    {% endif %}
+
+    {% if s.btn1_label != blank or s.btn2_label != blank %}
+      <div class="hero-banner__btns">
+        {% if s.btn1_label != blank %}
+          <a class="hero-banner__btn" href="{{ s.btn1_link | default: '#' }}">{{ s.btn1_label }}</a>
+        {% endif %}
+        {% if s.btn2_label != blank %}
+          <a class="hero-banner__btn" href="{{ s.btn2_link | default: '#' }}">{{ s.btn2_label }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {%- comment -%} Pause/Play button (video only) {%- endcomment -%}
+  {% if s.video_url != blank %}
+    <button
+      class="hero-banner__pause"
+      id="hero-pause-{{ section_id }}"
+      aria-label="Pause video"
+      type="button"
+    >
+      <span class="hero-banner__pause-icon hero-banner__pause-icon--pause" aria-hidden="true">
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="4" height="16" fill="currentColor"/>
+          <rect x="10" y="0" width="4" height="16" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="hero-banner__pause-icon hero-banner__pause-icon--play" aria-hidden="true" style="display:none;">
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0L14 8L0 16V0Z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+  {% endif %}
+
+</section>
+
+<style>
+  .hero-banner--{{ section_id }} {
+    position: relative;
+    width: 100%;
+    height: {{ s.banner_height | default: 540 }}px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    background: #111;
+  }
+
+  /* ── Shared image base ── */
+  .hero-banner--{{ section_id }} .hero-banner__image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .hero-banner--{{ section_id }} .hero-banner__image--placeholder {
+    background: linear-gradient(120deg, #1a1a1a 0%, #3a3530 100%);
+  }
+
+  /* ── Desktop bg: visible on desktop, hidden on mobile ── */
+  .hero-banner--{{ section_id }} .hero-banner__bg--desktop {
+    display: block;
+  }
+
+  /* ── Mobile bg: hidden on desktop, visible on mobile ── */
+  .hero-banner--{{ section_id }} .hero-banner__bg--mobile {
+    display: none;
+  }
+
+  /* ── Video ── */
+  .hero-banner--{{ section_id }} .hero-banner__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: {{ s.image_position | default: 'center center' }};
+    z-index: 0;
+  }
+
+  /* ── Overlay ── */
+  .hero-banner--{{ section_id }} .hero-banner__overlay {
+    position: absolute;
+    inset: 0;
+    background: {{ s.overlay_color | default: '#000000' }};
+    opacity: {{ s.overlay_opacity | default: 35 | times: 0.01 }};
+    z-index: 1;
+  }
+
+  /* ── Content ── */
+  .hero-banner--{{ section_id }} .hero-banner__content {
+    position: relative;
+    z-index: 2;
+    padding: 0 {{ s.content_side_padding | default: 48 }}px {{ s.content_bottom_padding | default: 52 }}px;
+    max-width: {{ s.content_max_width | default: 560 }}px;
+  }
+
+  /* ── Heading ── */
+  .hero-banner--{{ section_id }} .hero-banner__heading {
+    font-size: {{ s.heading_size | default: 64 }}px;
+    font-weight: 900;
+    font-style: italic;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: {{ s.heading_color | default: '#ffffff' }};
+    margin: 0 0 18px;
+    font-family: 'Helvetica Neue', 'Arial Black', sans-serif;
+    white-space: pre-line;
+  }
+
+  /* ── Subheading ── */
+  .hero-banner--{{ section_id }} .hero-banner__subheading {
+    font-size: {{ s.subheading_size | default: 14 }}px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: {{ s.subheading_color | default: '#ffffff' }};
+    margin: 0 0 8px;
+  }
+
+  /* ── Description ── */
+  .hero-banner--{{ section_id }} .hero-banner__desc {
+    font-size: {{ s.desc_size | default: 13 }}px;
+    font-weight: 400;
+    color: {{ s.desc_color | default: 'rgba(255,255,255,0.9)' }};
+    line-height: 1.5;
+    margin: 0 0 22px;
+  }
+
+  /* ── Buttons ── */
+  .hero-banner--{{ section_id }} .hero-banner__btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .hero-banner--{{ section_id }} .hero-banner__btn {
+    font-size: {{ s.btn_font_size | default: 13 }}px;
+    font-weight: 700;
+    color: {{ s.btn_color | default: '#ffffff' }};
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1.5px;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .hero-banner--{{ section_id }} .hero-banner__btn:hover {
+    opacity: 0.75;
+  }
+
+  /* ── Pause Button ── */
+  .hero-banner--{{ section_id }} .hero-banner__pause {
+    position: absolute;
+    bottom: {{ s.content_bottom_padding | default: 52 }}px;
+    right: 20px;
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.7);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+    padding: 0;
+  }
+
+  .hero-banner--{{ section_id }} .hero-banner__pause:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: #fff;
+  }
+
+  /* ════════════════════════════════
+     RESPONSIVE
+  ════════════════════════════════ */
+
+  /* Tablet: 769px – 1024px */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .hero-banner--{{ section_id }} {
+      height: {{ s.banner_height | default: 540 | times: 0.8 | round }}px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__heading {
+      font-size: {{ s.heading_size | default: 64 | times: 0.75 | round }}px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__content {
+      padding: 0 36px {{ s.content_bottom_padding | default: 52 }}px;
+      max-width: 70%;
+    }
+  }
+
+  /* Mobile: up to 768px — switch to mobile image */
+  @media (max-width: 768px) {
+    .hero-banner--{{ section_id }} {
+      height: {{ s.banner_height_mobile | default: 480 }}px;
+    }
+
+    /* Swap backgrounds */
+    .hero-banner--{{ section_id }} .hero-banner__bg--desktop {
+      display: none;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__bg--mobile {
+      display: block;
+    }
+
+    .hero-banner--{{ section_id }} .hero-banner__content {
+      padding: 0 20px {{ s.content_bottom_padding | default: 40 }}px;
+      max-width: 100%;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__heading {
+      font-size: {{ s.heading_size | default: 64 | times: 0.60 | round }}px;
+      margin-bottom: 12px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__subheading {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__desc {
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__btns {
+      gap: 16px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__btn {
+      font-size: 12px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__pause {
+      bottom: 16px;
+      right: 16px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  /* Mobile portrait: up to 480px */
+  @media (max-width: 480px) {
+    .hero-banner--{{ section_id }} {
+      height: {{ s.banner_height_mobile | default: 420 }}px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__heading {
+      font-size: {{ s.heading_size | default: 64 | times: 0.50 | round }}px;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__content {
+      padding: 0 16px {{ s.content_bottom_padding | default: 32 }}px;
+    }
+  }
+
+  /* Very small phones: up to 360px */
+  @media (max-width: 360px) {
+    .hero-banner--{{ section_id }} {
+      height: {{ s.banner_height_mobile | default: 380 }}px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__heading {
+      font-size: {{ s.heading_size | default: 64 | times: 0.44 | round }}px;
+    }
+    .hero-banner--{{ section_id }} .hero-banner__btns {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+
+{% if s.video_url != blank %}
+<script>
+  (function () {
+    var video = document.getElementById('hero-video-{{ section_id }}');
+    var btn   = document.getElementById('hero-pause-{{ section_id }}');
+    if (!video || !btn) return;
+
+    var iconPause = btn.querySelector('.hero-banner__pause-icon--pause');
+    var iconPlay  = btn.querySelector('.hero-banner__pause-icon--play');
+
+    btn.addEventListener('click', function () {
+      if (video.paused) {
+        video.play();
+        iconPause.style.display = '';
+        iconPlay.style.display  = 'none';
+        btn.setAttribute('aria-label', 'Pause video');
+      } else {
+        video.pause();
+        iconPause.style.display = 'none';
+        iconPlay.style.display  = '';
+        btn.setAttribute('aria-label', 'Play video');
+      }
+    });
+  })();
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "🖥️ Desktop Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Desktop Background Image"
+    },
+    {
+      "type": "text",
+      "id": "bg_image_alt",
+      "label": "Image Alt Text"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Background Video URL (MP4) — overrides image if set"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Desktop Image Position",
+      "options": [
+        { "value": "center center", "label": "Center" },
+        { "value": "top center",    "label": "Top"    },
+        { "value": "bottom center", "label": "Bottom" },
+        { "value": "left center",   "label": "Left"   },
+        { "value": "right center",  "label": "Right"  }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "header",
+      "content": "📱 Mobile Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile Background Image",
+      "info": "Shown on screens 768px and below. If not set, desktop image is used."
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Mobile Image Position",
+      "options": [
+        { "value": "center center", "label": "Center" },
+        { "value": "top center",    "label": "Top"    },
+        { "value": "bottom center", "label": "Bottom" },
+        { "value": "left center",   "label": "Left"   },
+        { "value": "right center",  "label": "Right"  }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "header",
+      "content": "🌑 Overlay"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 35,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_disabled",
+      "label": "Remove Overlay",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "📐 Layout"
+    },
+    {
+      "type": "range",
+      "id": "banner_height",
+      "label": "Banner Height (desktop)",
+      "min": 300,
+      "max": 900,
+      "step": 10,
+      "default": 540,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "banner_height_mobile",
+      "label": "Banner Height (mobile)",
+      "min": 200,
+      "max": 700,
+      "step": 10,
+      "default": 420,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_side_padding",
+      "label": "Content Side Padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_bottom_padding",
+      "label": "Content Bottom Padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 52,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Content Max Width",
+      "min": 200,
+      "max": 900,
+      "step": 20,
+      "default": 560,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "✏️ Content"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "LOOK SICK.\nRUN FAST."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "JUST DROPPED: RUNNING ELITE"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "The kit that makes every run feel like race day."
+    },
+    {
+      "type": "text",
+      "id": "btn1_label",
+      "label": "Button 1 Label",
+      "default": "Shop Women's"
+    },
+    {
+      "type": "url",
+      "id": "btn1_link",
+      "label": "Button 1 Link"
+    },
+    {
+      "type": "text",
+      "id": "btn2_label",
+      "label": "Button 2 Label",
+      "default": "Shop Men's"
+    },
+    {
+      "type": "url",
+      "id": "btn2_link",
+      "label": "Button 2 Link"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "desc_color",
+      "label": "Description Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "btn_color",
+      "label": "Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "🔤 Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading Font Size",
+      "min": 28,
+      "max": 120,
+      "step": 2,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Subheading Font Size",
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "desc_size",
+      "label": "Description Font Size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "default": 13,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "btn_font_size",
+      "label": "Button Font Size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "default": 13,
+      "unit": "px"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner",
+      "settings": {
+        "heading": "LOOK SICK.\nRUN FAST.",
+        "subheading": "JUST DROPPED: RUNNING ELITE",
+        "description": "The kit that makes every run feel like race day.",
+        "btn1_label": "Shop Women's",
+        "btn2_label": "Shop Men's",
+        "banner_height": 540,
+        "banner_height_mobile": 420,
+        "heading_size": 64,
+        "content_side_padding": 48,
+        "content_bottom_padding": 52
+      }
+    }
+  ]
+}
+{% endschema %}
