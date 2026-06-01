@@ -1,0 +1,871 @@
+{% comment %}
+  How It Works Section - Angled Stacking Cards
+  - Left: Sticky content that stays fixed
+  - Right: First card visible, others stack on top with rotation angles
+{% endcomment %}
+
+<section class="hiw-angles section-{{ section.id }}" style="
+  --section-bg: {{ section.settings.background_color }};
+  --text-color: {{ section.settings.text_color }};
+  --heading-color: {{ section.settings.heading_color }};
+  --accent-color: {{ section.settings.accent_color }};
+  --card-bg: {{ section.settings.card_background }};
+  --button-bg: {{ section.settings.button_color }};
+  --button-text: {{ section.settings.button_text_color }};
+  --card-count: {{ section.blocks.size }};
+">
+  <div class="hiw-angles__wrapper">
+    <div class="hiw-angles__container">
+      
+      {%- comment -%} Left Side - Sticky Content {%- endcomment -%}
+      <div class="hiw-angles__left">
+        <div class="hiw-angles__sticky-content">
+          {% if section.settings.subtitle != blank %}
+            <span class="hiw-angles__subtitle">{{ section.settings.subtitle }}</span>
+          {% endif %}
+          
+          {% if section.settings.heading != blank %}
+            <h2 class="hiw-angles__heading">{{ section.settings.heading }}</h2>
+          {% endif %}
+          
+          {% if section.settings.description != blank %}
+            <p class="hiw-angles__description">{{ section.settings.description }}</p>
+          {% endif %}
+
+          <div class="hiw-angles__buttons">
+            {% if section.settings.primary_button_text != blank %}
+              <a href="{{ section.settings.primary_button_link }}" class="hiw-angles__btn hiw-angles__btn--primary">
+                {{ section.settings.primary_button_text }}
+              </a>
+            {% endif %}
+            
+            {% if section.settings.secondary_button_text != blank %}
+              <a href="{{ section.settings.secondary_button_link }}" class="hiw-angles__btn hiw-angles__btn--secondary">
+                {{ section.settings.secondary_button_text }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17L17 7"/>
+                  <path d="M7 7h10v10"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Right Side - Stacking Cards {%- endcomment -%}
+      <div class="hiw-angles__right">
+        <div class="hiw-angles__cards-container">
+          {% for block in section.blocks %}
+            {% if block.type == 'step_card' %}
+              {% assign angles = '-3,2.5,-2,3.5,-1.5,2,-4,1.5' | split: ',' %}
+              {% assign angle_index = forloop.index0 | modulo: 8 %}
+              {% assign card_angle = angles[angle_index] %}
+              
+              <div class="hiw-angles__card {% if forloop.first %}is-visible is-base{% endif %}" 
+                   data-card-index="{{ forloop.index0 }}" 
+                   data-angle="{{ card_angle }}"
+                   style="--card-angle: {{ card_angle }}deg; --card-index: {{ forloop.index0 }};"
+                   {{ block.shopify_attributes }}>
+                <div class="hiw-angles__card-inner">
+                  {% if block.settings.card_image != blank %}
+                    <div class="hiw-angles__card-image-wrapper">
+                      {{ block.settings.card_image | image_url: width: 600 | image_tag: 
+                        class: 'hiw-angles__card-image',
+                        loading: 'lazy',
+                        alt: block.settings.card_title
+                      }}
+                      
+                      {%- comment -%} Decorative elements {%- endcomment -%}
+                      {% if block.settings.show_decorations %}
+                        <div class="hiw-angles__decorations">
+                          <span class="hiw-angles__deco hiw-angles__deco--1" style="background: {{ block.settings.decoration_color_1 }};"></span>
+                          <span class="hiw-angles__deco hiw-angles__deco--2" style="background: {{ block.settings.decoration_color_2 }};"></span>
+                          <span class="hiw-angles__deco hiw-angles__deco--3" style="background: {{ block.settings.decoration_color_3 }};"></span>
+                        </div>
+                      {% endif %}
+
+                      {%- comment -%} Connector line {%- endcomment -%}
+                      <svg class="hiw-angles__connector" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 10 Q 100 10, 100 40 T 190 70" stroke="#1a1a1a" stroke-width="2" stroke-dasharray="6,4" fill="none"/>
+                      </svg>
+                    </div>
+                  {% else %}
+                    <div class="hiw-angles__card-placeholder">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                    </div>
+                  {% endif %}
+
+                  <div class="hiw-angles__card-content">
+                    {% if block.settings.card_title != blank %}
+                      <h3 class="hiw-angles__card-title">{{ block.settings.card_title }}</h3>
+                    {% endif %}
+                    
+                    {% if block.settings.card_description != blank %}
+                      <p class="hiw-angles__card-desc">{{ block.settings.card_description }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {%- comment -%} Progress Dots {%- endcomment -%}
+        <div class="hiw-angles__progress">
+          {% for block in section.blocks %}
+            <div class="hiw-angles__dot {% if forloop.first %}is-active{% endif %}" data-dot="{{ forloop.index0 }}"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .hiw-angles {
+    background-color: var(--section-bg, #e8ebe4);
+    position: relative;
+  }
+
+  .hiw-angles__wrapper {
+    min-height: calc(100vh * var(--card-count, 4));
+    position: relative;
+  }
+
+  .hiw-angles__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* Left Side - Sticky */
+  .hiw-angles__left {
+    display: flex;
+    align-items: center;
+  }
+
+  .hiw-angles__sticky-content {
+    padding-right: 40px;
+  }
+
+  .hiw-angles__subtitle {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: clamp(24px, 3vw, 32px);
+    color: var(--heading-color, #1a1a1a);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+
+  .hiw-angles__heading {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    color: var(--heading-color, #1a1a1a);
+    margin: 0 0 24px 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .hiw-angles__description {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-color, #444);
+    margin: 0 0 32px 0;
+    max-width: 480px;
+  }
+
+  .hiw-angles__buttons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .hiw-angles__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+  }
+
+  .hiw-angles__btn--primary {
+    background: var(--button-bg, #e84c3d);
+    color: var(--button-text, #fff);
+    padding: 16px 32px;
+    box-shadow: 0 4px 15px rgba(232, 76, 61, 0.3);
+  }
+
+  .hiw-angles__btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(232, 76, 61, 0.4);
+  }
+
+  .hiw-angles__btn--secondary {
+    color: var(--heading-color, #1a1a1a);
+    padding: 16px 8px;
+  }
+
+  .hiw-angles__btn--secondary svg {
+    color: var(--accent-color, #e84c3d);
+    transition: transform 0.3s ease;
+  }
+
+  .hiw-angles__btn--secondary:hover svg {
+    transform: translate(3px, -3px);
+  }
+
+  /* Right Side - Cards */
+  .hiw-angles__right {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hiw-angles__cards-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 500px;
+    perspective: 1000px;
+  }
+
+  /* Individual Cards */
+  .hiw-angles__card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    max-width: 440px;
+    opacity: 0;
+    transform: translate(-50%, 150%) rotate(0deg);
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, opacity;
+    transform-origin: center bottom;
+  }
+
+  /* First card - already visible */
+  .hiw-angles__card.is-base {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--card-angle, 0deg));
+    z-index: 1;
+  }
+
+  /* Cards that have arrived and stacked */
+  .hiw-angles__card.is-visible {
+    opacity: 1;
+  }
+
+  .hiw-angles__card.is-stacked {
+    transform: translate(-50%, calc(-50% + var(--stack-offset, 0px))) rotate(var(--card-angle, 0deg));
+  }
+
+  /* Card animating in */
+  .hiw-angles__card.is-animating {
+    transform: translate(-50%, -50%) rotate(var(--card-angle, 0deg));
+  }
+
+  .hiw-angles__card-inner {
+    background: var(--card-bg, #fff);
+    border-radius: 20px;
+    padding: 28px 32px 32px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1), 
+                0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.4s ease;
+  }
+
+  .hiw-angles__card.is-visible:last-child .hiw-angles__card-inner,
+  .hiw-angles__card.is-top .hiw-angles__card-inner {
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+                0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Image Area */
+  .hiw-angles__card-image-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hiw-angles__card-image {
+    max-width: 180px;
+    max-height: 140px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hiw-angles__card-placeholder {
+    width: 140px;
+    height: 140px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .hiw-angles__card-placeholder svg {
+    width: 40px;
+    height: 40px;
+    color: #ccc;
+  }
+
+  /* Decorations */
+  .hiw-angles__decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .hiw-angles__deco {
+    position: absolute;
+    border-radius: 50%;
+    transition: transform 0.5s ease;
+  }
+
+  .hiw-angles__deco--1 {
+    width: 44px;
+    height: 44px;
+    top: 0;
+    right: 25%;
+    border-radius: 8px;
+  }
+
+  .hiw-angles__deco--2 {
+    width: 20px;
+    height: 20px;
+    top: 15%;
+    right: 10%;
+  }
+
+  .hiw-angles__deco--3 {
+    width: 14px;
+    height: 14px;
+    bottom: 25%;
+    right: 8%;
+  }
+
+  /* Connector */
+  .hiw-angles__connector {
+    position: absolute;
+    width: 100%;
+    height: 70px;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 1;
+    opacity: 0.5;
+  }
+
+  /* Card Content */
+  .hiw-angles__card-content {
+    padding-top: 4px;
+  }
+
+  .hiw-angles__card-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-color, #e84c3d);
+    margin: 0 0 10px 0;
+    line-height: 1.2;
+  }
+
+  .hiw-angles__card-desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-color, #555);
+    margin: 0;
+  }
+
+  /* Progress Dots */
+  .hiw-angles__progress {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 20;
+  }
+
+  .hiw-angles__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.15);
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+
+  .hiw-angles__dot.is-active {
+    background: var(--accent-color, #e84c3d);
+    transform: scale(1.4);
+    box-shadow: 0 0 0 4px rgba(232, 76, 61, 0.2);
+  }
+
+  /* Responsive */
+  @media screen and (max-width: 1100px) {
+    .hiw-angles__container {
+      gap: 50px;
+    }
+
+    .hiw-angles__progress {
+      right: -15px;
+    }
+  }
+
+  @media screen and (max-width: 990px) {
+    .hiw-angles__wrapper {
+      min-height: auto;
+    }
+
+    .hiw-angles__container {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      position: relative;
+      height: auto;
+      padding: 60px 20px;
+    }
+
+    .hiw-angles__sticky-content {
+      padding-right: 0;
+      text-align: center;
+    }
+
+    .hiw-angles__description {
+      max-width: 100%;
+    }
+
+    .hiw-angles__buttons {
+      justify-content: center;
+    }
+
+    .hiw-angles__right {
+      height: auto;
+    }
+
+    .hiw-angles__cards-container {
+      position: relative;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 100%;
+    }
+
+    .hiw-angles__card {
+      position: relative;
+      top: auto;
+      left: auto;
+      opacity: 1;
+      transform: none !important;
+      max-width: 100%;
+    }
+
+    .hiw-angles__progress {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 750px) {
+    .hiw-angles__container {
+      padding: 40px 20px;
+    }
+
+    .hiw-angles__buttons {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hiw-angles__btn--primary {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .hiw-angles__card-inner {
+      padding: 20px;
+    }
+
+    .hiw-angles__card-image-wrapper {
+      min-height: 120px;
+    }
+
+    .hiw-angles__card-title {
+      font-size: 18px;
+    }
+
+    .hiw-angles__card-desc {
+      font-size: 13px;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    const section = document.querySelector('.section-{{ section.id }}');
+    if (!section) return;
+
+    const wrapper = section.querySelector('.hiw-angles__wrapper');
+    const cardsContainer = section.querySelector('.hiw-angles__cards-container');
+    const cards = Array.from(section.querySelectorAll('.hiw-angles__card'));
+    const dots = section.querySelectorAll('.hiw-angles__dot');
+    const cardCount = cards.length;
+
+    if (cardCount === 0 || window.innerWidth <= 990) return;
+
+    // Set wrapper height
+    const viewportHeight = window.innerHeight;
+    const scrollPerCard = viewportHeight * 0.8;
+    wrapper.style.minHeight = `${viewportHeight + (scrollPerCard * (cardCount - 1)) + viewportHeight * 0.3}px`;
+
+    let currentTopCard = 0;
+
+    function updateCards() {
+      const sectionRect = section.getBoundingClientRect();
+      const sectionTop = sectionRect.top;
+      const scrollProgress = Math.max(0, -sectionTop);
+
+      // Calculate which card should be on top
+      const newTopCard = Math.min(Math.floor(scrollProgress / scrollPerCard), cardCount - 1);
+
+      cards.forEach((card, index) => {
+        const cardAngle = parseFloat(card.dataset.angle) || 0;
+        
+        // Reset classes
+        card.classList.remove('is-animating', 'is-stacked', 'is-top');
+        
+        if (index === 0) {
+          // First card is always visible as base
+          card.classList.add('is-visible');
+          
+          if (newTopCard > 0) {
+            // First card gets pushed down slightly when others stack
+            const stackOffset = Math.min(newTopCard * 6, 20);
+            card.style.transform = `translate(-50%, calc(-50% + ${stackOffset}px)) rotate(${cardAngle}deg)`;
+            card.style.zIndex = 1;
+          } else {
+            card.style.transform = `translate(-50%, -50%) rotate(${cardAngle}deg)`;
+            card.style.zIndex = cardCount;
+            card.classList.add('is-top');
+          }
+        } else if (index <= newTopCard) {
+          // This card should be visible and stacked
+          card.classList.add('is-visible', 'is-stacked');
+          
+          // Calculate stack position - newer cards on top
+          const stackPosition = newTopCard - index;
+          const stackOffset = stackPosition * 6;
+          
+          card.style.transform = `translate(-50%, calc(-50% + ${stackOffset}px)) rotate(${cardAngle}deg)`;
+          card.style.zIndex = cardCount - stackPosition;
+          
+          if (index === newTopCard) {
+            card.classList.add('is-top');
+          }
+        } else {
+          // Card hasn't appeared yet - waiting below
+          card.classList.remove('is-visible');
+          card.style.transform = `translate(-50%, 150%) rotate(0deg)`;
+          card.style.zIndex = 0;
+        }
+      });
+
+      // Update progress dots
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('is-active', index <= newTopCard);
+      });
+
+      currentTopCard = newTopCard;
+    }
+
+    // Throttled scroll handler
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateCards();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    // Click on dots to scroll to that card
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        const sectionTop = section.getBoundingClientRect().top + window.pageYOffset;
+        const targetScroll = sectionTop + (index * scrollPerCard);
+        window.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth <= 990) {
+        cards.forEach(card => {
+          card.style.transform = '';
+          card.style.zIndex = '';
+          card.classList.remove('is-visible', 'is-stacked', 'is-animating', 'is-top', 'is-base');
+        });
+        wrapper.style.minHeight = '';
+      } else {
+        wrapper.style.minHeight = `${window.innerHeight + (scrollPerCard * (cardCount - 1)) + window.innerHeight * 0.3}px`;
+        updateCards();
+      }
+    });
+
+    // Initial state
+    updateCards();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "How It Works Stack",
+  "tag": "section",
+  "class": "section-hiw-angles",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Left Content"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle (Italic)",
+      "default": "It's easy."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Here's how it works"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "We make the process of ordering custom socks easy! This is why some of the most known companies have chosen us for their custom sock needs."
+    },
+    {
+      "type": "header",
+      "content": "Primary Button"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_text",
+      "label": "Primary Button Text",
+      "default": "Get a FREE sample"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_link",
+      "label": "Primary Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Secondary Button"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_text",
+      "label": "Secondary Button Text",
+      "default": "Start designing"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Secondary Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#e8ebe4"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#444444"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent Color (Card Titles)",
+      "default": "#e84c3d"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Primary Button Color",
+      "default": "#e84c3d"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Primary Button Text Color",
+      "default": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step_card",
+      "name": "Step Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "card_image",
+          "label": "Card Image",
+          "info": "Recommended: 400x300px PNG with transparent background"
+        },
+        {
+          "type": "text",
+          "id": "card_title",
+          "label": "Card Title",
+          "default": "Prepare your design"
+        },
+        {
+          "type": "textarea",
+          "id": "card_description",
+          "label": "Card Description",
+          "default": "If you work with your graphic designer send him to our \"Start designing\" section where he can find all assets necessary for creating your sock design."
+        },
+        {
+          "type": "header",
+          "content": "Decorative Elements"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_decorations",
+          "label": "Show Decorations",
+          "default": true
+        },
+        {
+          "type": "color",
+          "id": "decoration_color_1",
+          "label": "Decoration 1 Color",
+          "default": "#333333"
+        },
+        {
+          "type": "color",
+          "id": "decoration_color_2",
+          "label": "Decoration 2 Color",
+          "default": "#888888"
+        },
+        {
+          "type": "color",
+          "id": "decoration_color_3",
+          "label": "Decoration 3 Color",
+          "default": "#9b59b6"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "How It Works Stack",
+      "blocks": [
+        {
+          "type": "step_card",
+          "settings": {
+            "card_title": "Prepare your design",
+            "card_description": "If you work with your graphic designer send him to our \"Start designing\" section where he can find all assets necessary for creating your sock design. After you send it to us we'll review it for sampling.",
+            "show_decorations": true,
+            "decoration_color_1": "#333333",
+            "decoration_color_2": "#888888",
+            "decoration_color_3": "#9b59b6"
+          }
+        },
+        {
+          "type": "step_card",
+          "settings": {
+            "card_title": "Sampling",
+            "card_description": "We'll create a physical sample of your custom socks so you can see and feel the quality before placing your full order. This ensures everything meets your expectations.",
+            "show_decorations": true,
+            "decoration_color_1": "#1a1a1a",
+            "decoration_color_2": "#e84c3d",
+            "decoration_color_3": "#f39c12"
+          }
+        },
+        {
+          "type": "step_card",
+          "settings": {
+            "card_title": "Production",
+            "card_description": "Once you approve the sample, we'll start producing your order. Our state-of-the-art manufacturing ensures consistent quality across all your custom socks.",
+            "show_decorations": true,
+            "decoration_color_1": "#27ae60",
+            "decoration_color_2": "#3498db",
+            "decoration_color_3": "#9b59b6"
+          }
+        },
+        {
+          "type": "step_card",
+          "settings": {
+            "card_title": "Delivery",
+            "card_description": "Your custom socks will be carefully packaged and shipped directly to your door. We offer worldwide shipping with tracking for your peace of mind.",
+            "show_decorations": true,
+            "decoration_color_1": "#e84c3d",
+            "decoration_color_2": "#f39c12",
+            "decoration_color_3": "#1abc9c"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,666 @@
+{% comment %}
+  =====================================================
+  THE SHORTS LIST — Slider Section (with Width Control)
+  =====================================================
+  INSTALLATION:
+  1. Shopify Admin → Online Store → Themes → "..." → Edit Code
+  2. sections/ folder → "Add a new section" → name: shorts-list
+  3. Delete default code → Paste this entire file → Save
+  4. Theme Editor → Add Section → "Shorts List Slider"
+  =====================================================
+{% endcomment %}
+
+{% assign sid = 'sl-' | append: section.id %}
+{% assign col = section.settings.collection %}
+
+<style>
+  #{{ sid }} {
+    background: {{ section.settings.bg_color }};
+    padding: {{ section.settings.pad_top }}px 0 {{ section.settings.pad_bottom }}px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ── Width Wrapper ── */
+  #{{ sid }} .sl-width-wrap {
+    max-width: {{ section.settings.section_max_width }}px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Header ── */
+  #{{ sid }} .sl-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 {{ section.settings.side_pad }}px;
+    margin-bottom: 20px;
+  }
+  #{{ sid }} .sl-title {
+    font-size: {{ section.settings.title_size }}px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: {{ section.settings.title_color }};
+    margin: 0;
+    text-transform: uppercase;
+  }
+  #{{ sid }} .sl-view-all {
+    font-size: 13px;
+    font-weight: 600;
+    color: {{ section.settings.title_color }};
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+  }
+  #{{ sid }} .sl-nav-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+  }
+  #{{ sid }} .sl-nav-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  #{{ sid }} .sl-nav-btn.active,
+  #{{ sid }} .sl-nav-btn:hover {
+    background: #111;
+    border-color: #111;
+  }
+  #{{ sid }} .sl-nav-btn svg { transition: stroke 0.2s; }
+  #{{ sid }} .sl-nav-btn.active svg path,
+  #{{ sid }} .sl-nav-btn:hover svg path {
+    stroke: #fff;
+  }
+
+  /* ── Slider Track ── */
+  #{{ sid }} .sl-track-wrap {
+    padding: 0 {{ section.settings.side_pad }}px;
+    overflow: hidden;
+  }
+  #{{ sid }} .sl-track {
+    display: flex;
+    gap: 12px;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+
+  /* ── Card ── */
+  #{{ sid }} .sl-card {
+    flex: 0 0 calc(25% - 9px);
+    min-width: 0;
+    position: relative;
+    cursor: pointer;
+  }
+  @media (max-width: 1024px) {
+    #{{ sid }} .sl-card { flex: 0 0 calc(50% - 6px); }
+  }
+  @media (max-width: 580px) {
+    #{{ sid }} .sl-card { flex: 0 0 calc(85% - 6px); }
+  }
+
+  /* Image */
+  #{{ sid }} .sl-img-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 130%;
+    overflow: hidden;
+    background: #e8e4de;
+  }
+  #{{ sid }} .sl-img-wrap img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 0.5s ease;
+    display: block;
+  }
+  #{{ sid }} .sl-card:hover .sl-img-wrap img {
+    transform: scale(1.04);
+  }
+
+  /* Wishlist btn */
+  #{{ sid }} .sl-wish {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 3;
+    transition: background 0.2s;
+  }
+  #{{ sid }} .sl-wish:hover { background: #fff; }
+  #{{ sid }} .sl-wish svg { width: 16px; height: 16px; }
+  #{{ sid }} .sl-wish.wished svg path { fill: #e00; stroke: #e00; }
+
+  /* Badges */
+  #{{ sid }} .sl-badges {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    display: flex; gap: 6px;
+    z-index: 3;
+  }
+  #{{ sid }} .sl-badge {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 4px 9px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  #{{ sid }} .sl-badge.new { background: #111; color: #fff; }
+  #{{ sid }} .sl-badge.sale { background: #c8f54a; color: #111; }
+
+  /* Size overlay on hover — smooth slide up */
+  #{{ sid }} .sl-sizes {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.97);
+    padding: 10px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    z-index: 4;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                opacity 0.25s ease;
+    pointer-events: none;
+  }
+  #{{ sid }} .sl-card:hover .sl-sizes {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #{{ sid }} .sl-size-btn {
+    flex: 1 1 auto;
+    min-width: 36px;
+    padding: 6px 4px;
+    text-align: center;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  #{{ sid }} .sl-size-btn:hover:not(:disabled) {
+    background: #111; color: #fff; border-color: #111;
+  }
+  #{{ sid }} .sl-size-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  #{{ sid }} .sl-size-btn.added {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+  }
+
+  /* Card Info */
+  #{{ sid }} .sl-info { padding: 10px 2px 0; }
+  #{{ sid }} .sl-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  #{{ sid }} .sl-prod-name {
+    font-size: 14px; font-weight: 600;
+    color: #111; margin: 0 0 1px;
+    line-height: 1.3;
+    text-decoration: none;
+    display: block;
+  }
+  #{{ sid }} .sl-prod-name:hover { color: #444; }
+  #{{ sid }} .sl-fit { font-size: 12px; color: #666; margin: 0 0 1px; }
+  #{{ sid }} .sl-color { font-size: 12px; color: #666; margin: 0 0 6px; }
+  #{{ sid }} .sl-rating {
+    font-size: 12px; color: #111; font-weight: 600;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 3px;
+  }
+  #{{ sid }} .sl-rating svg { width: 12px; height: 12px; }
+  #{{ sid }} .sl-prices { display: flex; align-items: center; gap: 8px; }
+  #{{ sid }} .sl-price { font-size: 14px; font-weight: 700; color: #111; }
+  #{{ sid }} .sl-compare { font-size: 13px; color: #999; text-decoration: line-through; }
+</style>
+
+<section id="{{ sid }}">
+  <div class="sl-width-wrap">
+
+    <div class="sl-header">
+      <h2 class="sl-title">{{ section.settings.section_title }}</h2>
+      {% if section.settings.view_all_link != blank %}
+        <a class="sl-view-all" href="{{ section.settings.view_all_link }}">
+          {{ section.settings.view_all_label }}
+        </a>
+      {% elsif col != blank %}
+        <a class="sl-view-all" href="{{ col.url }}">
+          {{ section.settings.view_all_label }}
+        </a>
+      {% endif %}
+      <div class="sl-nav-btns">
+        <button class="sl-nav-btn" id="{{ sid }}-prev" aria-label="Previous">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12L6 8L10 4" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="sl-nav-btn active" id="{{ sid }}-next" aria-label="Next">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 4L10 8L6 12" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sl-track-wrap">
+      <div class="sl-track" id="{{ sid }}-track">
+
+        {% if col != blank %}
+          {% for product in col.products limit: section.settings.products_to_show %}
+
+            {% assign is_sale = false %}
+            {% if product.compare_at_price > product.price %}
+              {% assign is_sale = true %}
+            {% endif %}
+
+            {% assign first_color = '' %}
+            {% assign first_fit = '' %}
+            {% for option in product.options_with_values %}
+              {% assign opt = option.name | downcase %}
+              {% if opt == 'color' or opt == 'colour' %}
+                {% assign first_color = option.values | first %}
+              {% endif %}
+              {% if opt == 'fit' or opt == 'size type' %}
+                {% assign first_fit = option.values | first %}
+              {% endif %}
+            {% endfor %}
+
+            {% assign rating_val = product.metafields.reviews.rating.value %}
+
+            <div class="sl-card">
+              <a href="{{ product.url }}">
+                <div class="sl-img-wrap">
+
+                  <button class="sl-wish" data-pid="{{ product.id }}" aria-label="Wishlist" onclick="event.preventDefault();slToggleWish(this)">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.08C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z" stroke="#111" stroke-width="1.5" fill="none"/>
+                    </svg>
+                  </button>
+
+                  {% if product.featured_image %}
+                    {{
+                      product.featured_image
+                      | image_url: width: 600
+                      | image_tag:
+                        loading: 'lazy',
+                        alt: product.featured_image.alt | default: product.title
+                    }}
+                  {% else %}
+                    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:#ccc;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px;">No Image</div>
+                  {% endif %}
+
+                  <div class="sl-badges">
+                    {% unless is_sale %}
+                      {% if section.settings.show_new_badge %}
+                        <span class="sl-badge new">New</span>
+                      {% endif %}
+                    {% endunless %}
+                    {% if is_sale %}
+                      {% assign discount = product.compare_at_price | minus: product.price %}
+                      {% assign discount_pct = discount | times: 100 | divided_by: product.compare_at_price %}
+                      <span class="sl-badge sale">{{ discount_pct }}% Off</span>
+                    {% endif %}
+                  </div>
+
+                  {% if section.settings.show_sizes %}
+                    <div class="sl-sizes">
+                      {% for variant in product.variants %}
+                        {% if variant.available %}
+                          <button
+                            class="sl-size-btn"
+                            data-variant-id="{{ variant.id }}"
+                            onclick="event.preventDefault(); event.stopPropagation(); slAddToCart(this, '{{ variant.id }}')"
+                          >{{ variant.title | split: ' / ' | last }}</button>
+                        {% else %}
+                          <button class="sl-size-btn" disabled>{{ variant.title | split: ' / ' | last }}</button>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+
+                </div>
+              </a>
+
+              <div class="sl-info">
+                <div class="sl-info-top">
+                  <div>
+                    <a class="sl-prod-name" href="{{ product.url }}">{{ product.title }}</a>
+                    {% if first_fit != blank %}
+                      <p class="sl-fit">{{ first_fit }}</p>
+                    {% elsif section.settings.fallback_fit != blank %}
+                      <p class="sl-fit">{{ section.settings.fallback_fit }}</p>
+                    {% endif %}
+                    {% if first_color != blank %}
+                      <p class="sl-color">{{ first_color }}</p>
+                    {% endif %}
+                    <div class="sl-prices">
+                      <span class="sl-price">{{ product.price | money }}</span>
+                      {% if is_sale %}
+                        <span class="sl-compare">{{ product.compare_at_price | money }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% if rating_val != blank %}
+                    <div class="sl-rating">
+                      <svg viewBox="0 0 24 24" fill="#111"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      {{ rating_val }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+          {% endfor %}
+
+        {% else %}
+          {% for i in (1..4) %}
+            <div class="sl-card">
+              <div class="sl-img-wrap" style="background:#ddd;">
+                <button class="sl-wish" aria-label="Wishlist">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.08C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z" stroke="#111" stroke-width="1.5"/></svg>
+                </button>
+                <div class="sl-badges"><span class="sl-badge new">New</span></div>
+              </div>
+              <div class="sl-info">
+                <p class="sl-prod-name">Product Name</p>
+                <p class="sl-fit">Slim Fit</p>
+                <p class="sl-color">Color</p>
+                <div class="sl-prices"><span class="sl-price">$48</span></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function() {
+  var track = document.getElementById('{{ sid }}-track');
+  var prevBtn = document.getElementById('{{ sid }}-prev');
+  var nextBtn = document.getElementById('{{ sid }}-next');
+  if (!track) return;
+
+  var currentIndex = 0;
+
+  function getVisible() {
+    var w = window.innerWidth;
+    if (w <= 580) return 1;
+    if (w <= 1024) return 2;
+    return 4;
+  }
+
+  function getCards() {
+    return track.querySelectorAll('.sl-card');
+  }
+
+  function getCardWidth() {
+    var cards = getCards();
+    if (!cards.length) return 0;
+    return cards[0].getBoundingClientRect().width + 12;
+  }
+
+  function getMax() {
+    var cards = getCards();
+    return Math.max(0, cards.length - getVisible());
+  }
+
+  function slideTo(index) {
+    var max = getMax();
+    currentIndex = Math.max(0, Math.min(index, max));
+    track.style.transform = 'translateX(-' + (currentIndex * getCardWidth()) + 'px)';
+    prevBtn.classList.toggle('active', currentIndex > 0);
+    nextBtn.classList.toggle('active', currentIndex < max);
+  }
+
+  prevBtn.addEventListener('click', function() { slideTo(currentIndex - 1); });
+  nextBtn.addEventListener('click', function() { slideTo(currentIndex + 1); });
+  window.addEventListener('resize', function() { slideTo(currentIndex); });
+
+  slideTo(0);
+})();
+
+function slToggleWish(btn) {
+  btn.classList.toggle('wished');
+}
+
+function slAddToCart(btn, variantId) {
+  var original = btn.textContent;
+  btn.textContent = '...';
+  btn.disabled = true;
+  btn.classList.remove('added');
+
+  fetch('/cart/add.js', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ id: parseInt(variantId), quantity: 1 })
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Cart error');
+    return res.json();
+  })
+  .then(function() {
+    btn.textContent = '✓ Added';
+    btn.classList.add('added');
+    btn.disabled = false;
+
+    /* ── Update cart count ── */
+    fetch('/cart.js')
+      .then(function(r) { return r.json(); })
+      .then(function(cart) {
+        /* Covers Dawn, Debut, Dawn-based themes */
+        var selectors = [
+          '[data-cart-count]',
+          '.cart-count',
+          '.cart__count',
+          '.cart-icon-bubble .visually-hidden',
+          '#cart-icon-bubble .visually-hidden',
+          '.header__cart-count',
+          '[aria-label="Cart"] .badge',
+          '.cart-count-bubble span:first-child'
+        ];
+        selectors.forEach(function(sel) {
+          document.querySelectorAll(sel).forEach(function(el) {
+            el.textContent = cart.item_count;
+          });
+        });
+
+        /* Dawn theme cart bubble */
+        document.querySelectorAll('cart-icon-bubble, .cart-icon-bubble').forEach(function(el) {
+          el.setAttribute('data-cart-count', cart.item_count);
+        });
+
+        /* Trigger theme cart refresh event (works on most modern themes) */
+        document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+      });
+
+    setTimeout(function() {
+      btn.textContent = original;
+      btn.classList.remove('added');
+    }, 2500);
+  })
+  .catch(function() {
+    btn.textContent = '✗ Error';
+    btn.style.background = '#e00';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#e00';
+    btn.disabled = false;
+    setTimeout(function() {
+      btn.textContent = original;
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2000);
+  });
+}
+</script>
+
+{% schema %}
+{
+  "name": "Shorts List Slider",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Collection"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Select Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to Show",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section Title",
+      "default": "THE SHORTS LIST"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Font Size (px)",
+      "min": 14,
+      "max": 48,
+      "step": 1,
+      "default": 22
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color",
+      "default": "#111111"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View All Label",
+      "default": "View All"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View All Link (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Cards"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "Show 'New' Badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sizes",
+      "label": "Show Size Selector on Hover",
+      "default": true,
+      "info": "Shows sizes from product 'Size' option on card hover"
+    },
+    {
+      "type": "text",
+      "id": "fallback_fit",
+      "label": "Fallback Fit Label",
+      "default": "Slim Fit",
+      "info": "Shown if product has no 'Fit' option"
+    },
+    {
+      "type": "header",
+      "content": "Width & Spacing"
+    },
+    {
+      "type": "range",
+      "id": "section_max_width",
+      "label": "Section Max Width (px)",
+      "min": 600,
+      "max": 1920,
+      "step": 20,
+      "default": 1400,
+      "info": "Controls how wide the section content gets. 1400px = boxed, 1920px = full width"
+    },
+    {
+      "type": "range",
+      "id": "side_pad",
+      "label": "Side Padding (px)",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 20,
+      "info": "Space on left and right inside the section"
+    },
+    {
+      "type": "range",
+      "id": "pad_top",
+      "label": "Top Padding (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "pad_bottom",
+      "label": "Bottom Padding (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shorts List Slider"
+    }
+  ]
+}
+{% endschema %}
