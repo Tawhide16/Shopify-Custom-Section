@@ -1,0 +1,630 @@
+{% comment %}
+  Section: Drei Schritte – "So funktioniert's"
+  Usage: Shopify Theme Editor > Add Section > Custom Liquid
+{% endcomment %}
+
+<section class="ds-section" id="ds-{{ section.id }}">
+  <div class="ds-container">
+
+    {%- comment %} ── Header ── {%- endcomment %}
+    <div class="ds-header">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="ds-eyebrow">{{ section.settings.eyebrow }}</span>
+      {%- endif -%}
+      <h2 class="ds-title">{{ section.settings.title }}</h2>
+    </div>
+
+    {%- comment %} ── Cards + Connector ── {%- endcomment %}
+    <div class="ds-grid-wrap">
+
+      {%- comment %} Center connecting line with dots at each card midpoint {%- endcomment %}
+      <div class="ds-connector" aria-hidden="true">
+        <div class="ds-connector__line"></div>
+        <div class="ds-connector__dot"></div>
+        <div class="ds-connector__dot"></div>
+        <div class="ds-connector__dot"></div>
+      </div>
+
+      <div class="ds-grid">
+
+        {%- for i in (1..3) -%}
+          {%- assign num_key   = 'step' | append: i | append: '_num' -%}
+          {%- assign title_key = 'step' | append: i | append: '_title' -%}
+          {%- assign text_key  = 'step' | append: i | append: '_text' -%}
+          {%- assign label_key = 'step' | append: i | append: '_label' -%}
+          {%- assign icon_key  = 'step' | append: i | append: '_icon' -%}
+
+          <div class="ds-card">
+            <div class="ds-card__top">
+              <span class="ds-card__num">{{ section.settings[num_key] }}</span>
+              <span class="ds-card__icon-wrap">
+                {%- if section.settings[icon_key] == 'bag' -%}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                {%- elsif section.settings[icon_key] == 'tube' -%}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="8" y="2" width="8" height="14" rx="2"/>
+                    <path d="M8 13h8"/><line x1="12" y1="16" x2="12" y2="22"/>
+                    <line x1="9" y1="22" x2="15" y2="22"/>
+                  </svg>
+                {%- elsif section.settings[icon_key] == 'check' -%}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                {%- else -%}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                  </svg>
+                {%- endif -%}
+              </span>
+            </div>
+
+            <div class="ds-card__body">
+              <h3 class="ds-card__title">{{ section.settings[title_key] }}</h3>
+              <p class="ds-card__text">{{ section.settings[text_key] }}</p>
+            </div>
+
+            <div class="ds-card__footer">
+              <span class="ds-card__dot"></span>
+              <span class="ds-card__label">{{ section.settings[label_key] }}</span>
+            </div>
+          </div>
+
+        {%- endfor -%}
+
+      </div>{%- comment %} end .ds-grid {%- endcomment %}
+    </div>{%- comment %} end .ds-grid-wrap {%- endcomment %}
+
+    {%- comment %} ── Bottom Badge ── {%- endcomment %}
+    {%- if section.settings.badge_text != blank -%}
+      <div class="ds-badge-wrap">
+        <span class="ds-badge">{{ section.settings.badge_text }}</span>
+      </div>
+    {%- endif -%}
+
+  </div>
+</section>
+
+<style>
+  #ds-{{ section.id }} {
+    --ds-bg:            {{ section.settings.section_bg }};
+    --ds-card-bg:       {{ section.settings.card_bg }};
+    --ds-card-border:   {{ section.settings.card_border }};
+    --ds-num-color:     {{ section.settings.num_color }};
+    --ds-icon-bg:       {{ section.settings.icon_bg }};
+    --ds-icon-color:    {{ section.settings.icon_color }};
+    --ds-title-color:   {{ section.settings.title_color }};
+    --ds-text-color:    {{ section.settings.text_color }};
+    --ds-label-color:   {{ section.settings.label_color }};
+    --ds-dot-color:     {{ section.settings.dot_color }};
+    --ds-badge-bg:      {{ section.settings.badge_bg }};
+    --ds-badge-color:   {{ section.settings.badge_color }};
+    --ds-eyebrow-color: {{ section.settings.eyebrow_color }};
+    --ds-heading-color: {{ section.settings.heading_color }};
+    --ds-line-color:    {{ section.settings.connector_color }};
+  }
+
+  /* ── Section ── */
+  .ds-section {
+    background-color: var(--ds-bg);
+    padding: 80px 24px 72px;
+  }
+  .ds-container {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .ds-header {
+    text-align: center;
+    margin-bottom: 52px;
+  }
+  .ds-eyebrow {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ds-eyebrow-color);
+    margin-bottom: 14px;
+  }
+  .ds-title {
+    font-size: clamp(36px, 3.5vw, 48px);
+    font-weight: 400;
+    color: var(--ds-heading-color);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* ── Grid Wrap (holds connector + grid together) ── */
+  .ds-grid-wrap {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  /* ── Connector Line ── */
+  .ds-connector {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  /* The actual horizontal line spanning full width */
+  .ds-connector__line {
+    position: absolute;
+    top: 50%;
+    left: 16.67%;   /* starts at center of card 1 */
+    right: 16.67%;  /* ends at center of card 3 */
+    height: 1px;
+    background: var(--ds-line-color);
+    transform: translateY(-50%);
+  }
+
+  /* Dots sitting on the line at each card center */
+  .ds-connector__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ds-bg);
+    border: 1.5px solid var(--ds-line-color);
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  /* ── Cards Grid ── */
+  .ds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    .ds-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* On mobile: vertical connector */
+    .ds-connector {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: auto;
+      transform: translateX(-50%);
+      flex-direction: column;
+      justify-content: space-around;
+      height: 100%;
+    }
+    .ds-connector__line {
+      top: 16.67%;
+      bottom: 16.67%;
+      left: 50%;
+      right: auto;
+      width: 1px;
+      height: auto;
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ── Card Animation ── */
+  @keyframes ds-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Card ── */
+  .ds-card {
+    background: var(--ds-card-bg);
+    border: 1px solid var(--ds-card-border);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(32px);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .ds-card.is-visible {
+    animation: ds-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .ds-card:nth-child(1).is-visible { animation-delay: 0s; }
+  .ds-card:nth-child(2).is-visible { animation-delay: 0.15s; }
+  .ds-card:nth-child(3).is-visible { animation-delay: 0.3s; }
+
+  .ds-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border-color: color-mix(in srgb, var(--ds-card-border) 60%, #000);
+    transform: translateY(-4px);
+  }
+
+  .ds-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .ds-card__num {
+    font-size: 38px;
+    font-weight: 400;
+    color: var(--ds-num-color);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .ds-card__icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: var(--ds-icon-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ds-icon-color);
+    flex-shrink: 0;
+  }
+
+  .ds-card__body {
+    flex: 1;
+    margin-bottom: 32px;
+  }
+
+  .ds-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ds-title-color);
+    margin: 0 0 10px;
+    line-height: 1.3;
+  }
+
+  .ds-card__text {
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--ds-text-color);
+    margin: 0;
+  }
+
+  .ds-card__footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ds-card-border);
+  }
+
+  .ds-card__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ds-dot-color);
+    flex-shrink: 0;
+  }
+
+  .ds-card__label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ds-label-color);
+  }
+
+  /* ── Bottom Badge ── */
+  .ds-badge-wrap {
+    display: flex;
+    justify-content: center;
+  }
+  .ds-badge {
+    display: inline-block;
+    background: var(--ds-badge-bg);
+    color: var(--ds-badge-color);
+    font-size: 12px;
+    font-style: italic;
+    padding: 12px 28px;
+    border-radius: 50px;
+    letter-spacing: 0.01em;
+  }
+</style>
+<script>
+(function () {
+  const cards = document.querySelectorAll('#ds-{{ section.id }} .ds-card');
+  if (!cards.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  cards.forEach((card) => observer.observe(card));
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Drei Schritte",
+  "tag": "section",
+  "class": "section-drei-schritte",
+  "settings": [
+    {
+      "type": "header",
+      "content": "🎨 Colors — Section & Cards"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section Background",
+      "default": "#f5f2ed"
+    },
+    {
+      "type": "color",
+      "id": "card_bg",
+      "label": "Card Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_border",
+      "label": "Card Border Color",
+      "default": "#e5e0da"
+    },
+    {
+      "type": "color",
+      "id": "connector_color",
+      "label": "Connector Line & Dot Color",
+      "default": "#d0cbc4"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Colors — Text"
+    },
+    {
+      "type": "color",
+      "id": "eyebrow_color",
+      "label": "Eyebrow Text Color",
+      "default": "#9e9890"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Main Heading Color",
+      "default": "#1a1a18"
+    },
+    {
+      "type": "color",
+      "id": "num_color",
+      "label": "Step Number Color",
+      "default": "#d9d4cd"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Card Title Color",
+      "default": "#1a1a18"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Card Body Text Color",
+      "default": "#6b6660"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Footer Label Color",
+      "default": "#9e9890"
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Footer Dot Color",
+      "default": "#9e9890"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Colors — Icon & Badge"
+    },
+    {
+      "type": "color",
+      "id": "icon_bg",
+      "label": "Icon Background",
+      "default": "#eeebe5"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon Color",
+      "default": "#8a857e"
+    },
+    {
+      "type": "color",
+      "id": "badge_bg",
+      "label": "Badge Background",
+      "default": "#e8e4dd"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge Text Color",
+      "default": "#6b6660"
+    },
+    {
+      "type": "header",
+      "content": "📝 Header Text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (small top text)",
+      "default": "SO FUNKTIONIERT'S"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Main Heading",
+      "default": "In drei Schritten zu deinem Ergebnis"
+    },
+    {
+      "type": "header",
+      "content": "📋 Step 1"
+    },
+    {
+      "type": "text",
+      "id": "step1_num",
+      "label": "Number",
+      "default": "01"
+    },
+    {
+      "type": "select",
+      "id": "step1_icon",
+      "label": "Icon",
+      "options": [
+        { "value": "bag",   "label": "Shopping Bag" },
+        { "value": "tube",  "label": "Test Tube" },
+        { "value": "check", "label": "Checkbox / Check" },
+        { "value": "plus",  "label": "Plus / Generic" }
+      ],
+      "default": "bag"
+    },
+    {
+      "type": "text",
+      "id": "step1_title",
+      "label": "Card Title",
+      "default": "Testkit erhalten"
+    },
+    {
+      "type": "textarea",
+      "id": "step1_text",
+      "label": "Card Description",
+      "default": "Du bestellst epiAge™ online und erhältst dein Testkit bequem nach Hause."
+    },
+    {
+      "type": "text",
+      "id": "step1_label",
+      "label": "Footer Label",
+      "default": "SCHRITT 1"
+    },
+    {
+      "type": "header",
+      "content": "📋 Step 2"
+    },
+    {
+      "type": "text",
+      "id": "step2_num",
+      "label": "Number",
+      "default": "02"
+    },
+    {
+      "type": "select",
+      "id": "step2_icon",
+      "label": "Icon",
+      "options": [
+        { "value": "bag",   "label": "Shopping Bag" },
+        { "value": "tube",  "label": "Test Tube" },
+        { "value": "check", "label": "Checkbox / Check" },
+        { "value": "plus",  "label": "Plus / Generic" }
+      ],
+      "default": "tube"
+    },
+    {
+      "type": "text",
+      "id": "step2_title",
+      "label": "Card Title",
+      "default": "Speichelprobe entnehmen"
+    },
+    {
+      "type": "textarea",
+      "id": "step2_text",
+      "label": "Card Description",
+      "default": "Die Probenentnahme erfolgt einfach zuhause anhand der beiliegenden Anleitung."
+    },
+    {
+      "type": "text",
+      "id": "step2_label",
+      "label": "Footer Label",
+      "default": "SCHRITT 2"
+    },
+    {
+      "type": "header",
+      "content": "📋 Step 3"
+    },
+    {
+      "type": "text",
+      "id": "step3_num",
+      "label": "Number",
+      "default": "03"
+    },
+    {
+      "type": "select",
+      "id": "step3_icon",
+      "label": "Icon",
+      "options": [
+        { "value": "bag",   "label": "Shopping Bag" },
+        { "value": "tube",  "label": "Test Tube" },
+        { "value": "check", "label": "Checkbox / Check" },
+        { "value": "plus",  "label": "Plus / Generic" }
+      ],
+      "default": "check"
+    },
+    {
+      "type": "text",
+      "id": "step3_title",
+      "label": "Card Title",
+      "default": "Ergebnis digital erhalten"
+    },
+    {
+      "type": "textarea",
+      "id": "step3_text",
+      "label": "Card Description",
+      "default": "Nach der laborgestützten Analyse erhältst du dein Ergebnis digital und kannst dein biologisches Alter besser einordnen."
+    },
+    {
+      "type": "text",
+      "id": "step3_label",
+      "label": "Footer Label",
+      "default": "SCHRITT 3"
+    },
+    {
+      "type": "header",
+      "content": "💬 Bottom Badge"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge Text",
+      "default": "Einfach in der Anwendung. Wissenschaftlich in der Auswertung."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Drei Schritte"
+    }
+  ]
+}
+{% endschema %}
