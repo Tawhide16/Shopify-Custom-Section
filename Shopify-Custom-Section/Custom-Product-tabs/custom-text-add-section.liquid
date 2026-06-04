@@ -1,0 +1,1268 @@
+{{ 'section-product-tabs.css' | asset_url | stylesheet_tag }}
+
+<section class="product-tabs-section" id="section-{{ section.id }}">
+  <div class="pts-container">
+
+    {%- if section.settings.section_heading != blank -%}
+      <div class="pts-heading-wrap">
+        <h2 class="pts-section-heading">{{ section.settings.section_heading }}</h2>
+        {%- if section.settings.section_subheading != blank -%}
+          <p class="pts-section-subheading">{{ section.settings.section_subheading }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+
+      <!-- TAB NAV -->
+      <div class="pts-tab-nav-wrap">
+        <div class="pts-tab-nav" role="tablist">
+          {%- for block in section.blocks -%}
+            {%- assign tab_product = block.settings.product -%}
+            <button
+              class="pts-tab-btn{% if forloop.first %} pts-tab-btn--active{% endif %}"
+              role="tab"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-controls="pts-panel-{{ section.id }}-{{ forloop.index }}"
+              data-tab-index="{{ forloop.index }}"
+              id="pts-tab-{{ section.id }}-{{ forloop.index }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.settings.tab_icon != blank -%}
+                <span class="pts-tab-icon">
+                  {{- block.settings.tab_icon | image_url: width: 32 | image_tag: loading: 'lazy', alt: block.settings.tab_label -}}
+                </span>
+              {%- endif -%}
+              <span class="pts-tab-label">{{ block.settings.tab_label | default: tab_product.title | default: 'Product Tab' }}</span>
+            </button>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <!-- TAB PANELS -->
+      <div class="pts-panels">
+        {%- for block in section.blocks -%}
+          {%- assign tab_product = block.settings.product -%}
+          {%- assign tab_variant = tab_product.selected_or_first_available_variant -%}
+
+          <div
+            class="pts-panel{% if forloop.first %} pts-panel--active{% endif %}"
+            role="tabpanel"
+            id="pts-panel-{{ section.id }}-{{ forloop.index }}"
+            aria-labelledby="pts-tab-{{ section.id }}-{{ forloop.index }}"
+            data-panel-index="{{ forloop.index }}"
+          >
+            {%- if tab_product != blank -%}
+              <div class="pts-product-card">
+
+                <!-- LEFT: PRODUCT INFO -->
+                <div class="pts-product-info">
+
+                  {%- if section.settings.show_badge and tab_product.available == false -%}
+                    <span class="pts-badge pts-badge--sold-out">Sold Out</span>
+                  {%- elsif section.settings.show_badge and tab_product.compare_at_price > tab_product.price -%}
+                    <span class="pts-badge pts-badge--sale">
+                      {%- assign savings = tab_product.compare_at_price | minus: tab_product.price | times: 100 | divided_by: tab_product.compare_at_price -%}
+                      Save {{ savings }}%
+                    </span>
+                  {%- endif -%}
+
+                  {%- if section.settings.show_vendor and tab_product.vendor != blank -%}
+                    <p class="pts-product-vendor">{{ tab_product.vendor }}</p>
+                  {%- endif -%}
+
+                  <h3 class="pts-product-title">{{ tab_product.title }}</h3>
+
+                  <!-- PRICE -->
+                  <div class="pts-price-wrap">
+                    {%- if tab_product.compare_at_price > tab_product.price -%}
+                      <span class="pts-price pts-price--sale">{{ tab_product.price | money }}</span>
+                      <span class="pts-price pts-price--compare">{{ tab_product.compare_at_price | money }}</span>
+                    {%- else -%}
+                      <span class="pts-price">{{ tab_product.price | money }}</span>
+                    {%- endif -%}
+                  </div>
+
+                  <!-- RATING -->
+                  {%- if tab_product.metafields.reviews.rating.value != blank -%}
+                    <div class="pts-rating">
+                      {%- assign rating_val = tab_product.metafields.reviews.rating.value | times: 1 -%}
+                      {%- for i in (1..5) -%}
+                        <span class="pts-star{% if i <= rating_val %} pts-star--filled{% endif %}">★</span>
+                      {%- endfor -%}
+                      {%- if tab_product.metafields.reviews.rating_count.value != blank -%}
+                        <span class="pts-rating-count">({{ tab_product.metafields.reviews.rating_count.value }})</span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                  <!-- SHORT DESCRIPTION -->
+                  {%- if tab_product.description != blank -%}
+                    <div class="pts-product-desc">
+                      {{ tab_product.description | strip_html | truncate: 180 }}
+                    </div>
+                  {%- endif -%}
+
+                  <!-- HIGHLIGHTS -->
+                  {%- if block.settings.highlights != blank -%}
+                    <ul class="pts-highlights">
+                      {%- assign highlights_list = block.settings.highlights | split: '|' -%}
+                      {%- for item in highlights_list -%}
+                        <li>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 7L5.5 10.5L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          {{ item | strip }}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- endif -%}
+
+                  <!-- VARIANT SELECTOR -->
+                  {%- unless tab_product.has_only_default_variant -%}
+                    <div class="pts-variants">
+                      {%- for option in tab_product.options_with_values -%}
+                        <div class="pts-variant-group" data-option-name="{{ option.name | downcase | escape }}">
+                          <label class="pts-variant-label">{{ option.name }}</label>
+                          <div class="pts-variant-options">
+                            {%- for value in option.values -%}
+                              {%- assign option_index = forloop.parentloop.index -%}
+                              {%- assign selected_option = 'option' | append: option_index -%}
+                              <button
+                                class="pts-variant-swatch{% if tab_variant[selected_option] == value %} pts-variant-swatch--selected{% endif %}"
+                                data-option-index="{{ option_index }}"
+                                data-value="{{ value | escape }}"
+                                data-panel="{{ forloop.parentloop.parentloop.index }}"
+                                data-product-handle="{{ tab_product.handle }}"
+                                type="button"
+                              >
+                                {{ value }}
+                              </button>
+                            {%- endfor -%}
+                          </div>
+                        </div>
+                      {%- endfor -%}
+                    </div>
+                  {%- endunless -%}
+
+                  <!-- CUSTOM TEXT FIELD -->
+                  <div class="pts-custom-field">
+                    <label class="pts-field-label" for="pts-custom-text-{{ section.id }}-{{ forloop.index }}">
+                      {{ block.settings.custom_field_label | default: 'Add Your Personalization' }}
+                      {%- if block.settings.custom_field_required -%}
+                        <span class="pts-required" aria-label="required">*</span>
+                      {%- endif -%}
+                    </label>
+                    {%- if block.settings.custom_field_type == 'textarea' -%}
+                      <textarea
+                        class="pts-field-input pts-field-input--textarea"
+                        id="pts-custom-text-{{ section.id }}-{{ forloop.index }}"
+                        name="properties[{{ block.settings.custom_field_name | default: 'Custom Text' | escape }}]"
+                        placeholder="{{ block.settings.custom_field_placeholder | default: 'Enter your custom text here...' }}"
+                        {% if block.settings.custom_field_required %}required{% endif %}
+                        rows="3"
+                      ></textarea>
+                    {%- else -%}
+                      <input
+                        class="pts-field-input"
+                        id="pts-custom-text-{{ section.id }}-{{ forloop.index }}"
+                        type="text"
+                        name="properties[{{ block.settings.custom_field_name | default: 'Custom Text' | escape }}]"
+                        placeholder="{{ block.settings.custom_field_placeholder | default: 'Enter your custom text here...' }}"
+                        {% if block.settings.custom_field_required %}required{% endif %}
+                      >
+                    {%- endif -%}
+                    {%- if block.settings.custom_field_hint != blank -%}
+                      <p class="pts-field-hint">{{ block.settings.custom_field_hint }}</p>
+                    {%- endif -%}
+                  </div>
+
+                  <!-- BUTTONS -->
+                  <div class="pts-actions">
+                    {%- if tab_product.available -%}
+
+                      {%- if section.settings.show_atc -%}
+                        <button
+                          class="pts-btn-atc"
+                          type="button"
+                          data-variant-id="{{ tab_variant.id }}"
+                          data-product-handle="{{ tab_product.handle }}"
+                          data-field-id="pts-custom-text-{{ section.id }}-{{ forloop.index }}"
+                          data-field-name="{{ block.settings.custom_field_name | default: 'Custom Text' | escape }}"
+                          data-field-required="{{ block.settings.custom_field_required }}"
+                          data-section-id="{{ section.id }}"
+                          data-panel-index="{{ forloop.index }}"
+                          data-action="atc"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1 1H3.5L5.2 11H13.5M5.5 14.5H14M6 14.5C6 15.3284 5.32843 16 4.5 16C3.67157 16 3 15.3284 3 14.5M13.5 14.5C13.5 15.3284 12.8284 16 12 16C11.1716 16 10.5 15.3284 10.5 14.5M5.5 5H15.5L14.5 11H5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          <span class="pts-btn-atc__text">Add to Cart</span>
+                          <span class="pts-btn-atc__loader" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="40" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="0.8s" repeatCount="indefinite"/></circle></svg>
+                          </span>
+                        </button>
+                      {%- endif -%}
+
+                      <button
+                        class="pts-btn-buy"
+                        type="button"
+                        data-variant-id="{{ tab_variant.id }}"
+                        data-product-handle="{{ tab_product.handle }}"
+                        data-field-id="pts-custom-text-{{ section.id }}-{{ forloop.index }}"
+                        data-field-name="{{ block.settings.custom_field_name | default: 'Custom Text' | escape }}"
+                        data-field-required="{{ block.settings.custom_field_required }}"
+                        data-section-id="{{ section.id }}"
+                        data-panel-index="{{ forloop.index }}"
+                        data-action="buynow"
+                      >
+                        <span class="pts-btn-buy__text">Checkout</span>
+                        <span class="pts-btn-buy__loader" aria-hidden="true">
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="40" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="0.8s" repeatCount="indefinite"/></circle></svg>
+                        </span>
+                      </button>
+
+                    {%- else -%}
+                      <button class="pts-btn-buy pts-btn-buy--disabled" disabled>
+                        <span class="pts-btn-buy__text">Sold Out</span>
+                      </button>
+                    {%- endif -%}
+                  </div>
+
+                  {%- if section.settings.show_view_details -%}
+                    <a href="{{ tab_product.url }}" class="pts-view-details">
+                      View full details
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                  {%- endif -%}
+
+                </div><!-- /pts-product-info -->
+
+                <!-- RIGHT: PRODUCT IMAGE -->
+                <div class="pts-product-media">
+                  {%- if tab_product.featured_image != blank -%}
+                    <div class="pts-image-wrapper">
+                      <a href="{{ tab_product.url }}" class="pts-image-link" aria-label="{{ tab_product.title | escape }}">
+                        {%- assign img_alt = tab_product.featured_image.alt | default: tab_product.title | escape -%}
+                        {%- assign img_src_400 = tab_product.featured_image | image_url: width: 400 -%}
+                        {%- assign img_src_600 = tab_product.featured_image | image_url: width: 600 -%}
+                        {%- assign img_src_800 = tab_product.featured_image | image_url: width: 800 -%}
+                        <img
+                          src="{{ img_src_800 }}"
+                          alt="{{ img_alt }}"
+                          class="pts-product-image"
+                          loading="lazy"
+                          width="800"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          srcset="{{ img_src_400 }} 400w, {{ img_src_600 }} 600w, {{ img_src_800 }} 800w"
+                        >
+                      </a>
+                      {%- if tab_product.images.size > 1 -%}
+                        <div class="pts-image-thumbs">
+                          {%- for img in tab_product.images limit: 4 -%}
+                            <button
+                              class="pts-thumb{% if forloop.first %} pts-thumb--active{% endif %}"
+                              type="button"
+                              data-src="{{ img | image_url: width: 800 }}"
+                              data-panel="{{ forloop.parentloop.index }}"
+                              aria-label="View image {{ forloop.index }}"
+                            >
+                              {{
+                                img
+                                | image_url: width: 120
+                                | image_tag:
+                                  loading: 'lazy',
+                                  alt: img.alt | default: tab_product.title | escape
+                              }}
+                            </button>
+                          {%- endfor -%}
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  {%- else -%}
+                    <div class="pts-image-placeholder">
+                      {{ 'product-1' | placeholder_svg_tag: 'pts-placeholder-svg' }}
+                    </div>
+                  {%- endif -%}
+                </div><!-- /pts-product-media -->
+
+              </div><!-- /pts-product-card -->
+
+            {%- else -%}
+              <div class="pts-empty-tab">
+                <p>No product selected. Edit this tab in the theme customizer to choose a product.</p>
+              </div>
+            {%- endif -%}
+          </div><!-- /pts-panel -->
+
+        {%- endfor -%}
+      </div><!-- /pts-panels -->
+
+      <!-- SUCCESS TOAST -->
+      <div class="pts-toast" id="pts-toast-{{ section.id }}" aria-live="polite" aria-atomic="true" role="status">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L7 13L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="pts-toast-msg">Added to cart successfully!</span>
+      </div>
+
+    {%- else -%}
+      <div class="pts-no-blocks">
+        <p>Add product tab blocks in the theme customizer to get started.</p>
+      </div>
+    {%- endif -%}
+
+  </div>
+</section>
+
+<style>
+#section-{{ section.id }} {
+  --pts-accent:       {{ section.settings.accent_color }};
+  --pts-accent-hover: {{ section.settings.accent_color | color_darken: 12 }};
+  --pts-text:         {{ section.settings.text_color }};
+  --pts-bg:           {{ section.settings.bg_color }};
+  --pts-border:       {{ section.settings.border_color }};
+  --pts-radius:       {{ section.settings.border_radius }}px;
+  --pts-tab-gap:      {{ section.settings.tab_gap }}px;
+}
+</style>
+
+<script>
+(function () {
+  const SECTION_ID = '{{ section.id }}';
+
+  function qs(sel, ctx)  { return (ctx || document).querySelector(sel); }
+  function qsa(sel, ctx) { return [...(ctx || document).querySelectorAll(sel)]; }
+
+  /* ── TAB SWITCHING ────────────────────────────── */
+  function initTabs(section) {
+    const tabs   = qsa('.pts-tab-btn', section);
+    const panels = qsa('.pts-panel', section);
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = btn.dataset.tabIndex;
+        tabs.forEach(t => { t.classList.remove('pts-tab-btn--active'); t.setAttribute('aria-selected', 'false'); });
+        panels.forEach(p => p.classList.remove('pts-panel--active'));
+        btn.classList.add('pts-tab-btn--active');
+        btn.setAttribute('aria-selected', 'true');
+        qs(`[data-panel-index="${idx}"]`, section).classList.add('pts-panel--active');
+      });
+    });
+  }
+
+  /* ── THUMBNAIL SWITCHING ──────────────────────── */
+  function initThumbs(section) {
+    qsa('.pts-thumb', section).forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        const panelIdx = thumb.dataset.panel;
+        const panel    = qs(`[data-panel-index="${panelIdx}"]`, section);
+        if (!panel) return;
+        const mainImg = qs('.pts-product-image', panel);
+        if (mainImg) {
+          mainImg.src = thumb.dataset.src;
+          mainImg.classList.add('pts-image--swap');
+          setTimeout(() => mainImg.classList.remove('pts-image--swap'), 400);
+        }
+        qsa('.pts-thumb', panel).forEach(t => t.classList.remove('pts-thumb--active'));
+        thumb.classList.add('pts-thumb--active');
+      });
+    });
+  }
+
+  /* ── VARIANT SWITCHING ────────────────────────── */
+  function initVariants(section) {
+    qsa('.pts-variant-swatch', section).forEach(swatch => {
+      swatch.addEventListener('click', async () => {
+        const panelIdx = swatch.dataset.panel;
+        const panel    = qs(`[data-panel-index="${panelIdx}"]`, section);
+        if (!panel) return;
+
+        const group = swatch.closest('.pts-variant-group');
+        qsa('.pts-variant-swatch', group).forEach(s => s.classList.remove('pts-variant-swatch--selected'));
+        swatch.classList.add('pts-variant-swatch--selected');
+
+        const handle         = swatch.dataset.productHandle;
+        const allGroups      = qsa('.pts-variant-group', panel);
+        const selectedValues = allGroups.map(g => {
+          const sel = qs('.pts-variant-swatch--selected', g);
+          return sel ? sel.dataset.value : '';
+        });
+
+        try {
+          const res  = await fetch(`/products/${handle}.js`);
+          const prod = await res.json();
+          const match = prod.variants.find(v =>
+            selectedValues.every((val, i) => v[`option${i + 1}`] === val)
+          );
+          if (match) {
+            const buyBtn = qs('.pts-btn-buy', panel);
+            if (buyBtn) buyBtn.dataset.variantId = match.id;
+            const atcBtn = qs('.pts-btn-atc', panel);
+            if (atcBtn) atcBtn.dataset.variantId = match.id;
+
+            const priceEl = qs('.pts-price:not(.pts-price--compare)', panel);
+            if (priceEl && match.price) priceEl.textContent = formatMoney(match.price);
+
+            if (match.featured_image) {
+              const mainImg = qs('.pts-product-image', panel);
+              if (mainImg) mainImg.src = match.featured_image.src.replace(/(\.\w+)$/, '_800x$1');
+            }
+          }
+        } catch (e) { /* silent */ }
+      });
+    });
+  }
+
+  function formatMoney(cents) {
+    const amount = (cents / 100).toFixed(2);
+    return window.Shopify && window.Shopify.currency ? window.Shopify.currency.active + amount : '$' + amount;
+  }
+
+  /* ── REAL-TIME CART REFRESH + DRAWER OPEN ─────── */
+  /*
+   *  কাজের ধাপ:
+   *  1. Shopify Sections API দিয়ে cart-related section-গুলোর HTML একবারে নিয়ে DOM-এ inject করা
+   *  2. Cart count সব জায়গায় update করা
+   *  3. Theme-specific events fire করে drawer খোলা
+   *  4. Fallback হিসেবে drawer button click করা
+   */
+  async function refreshCartAndOpenDrawer() {
+
+    /* ── STEP 1: Sections API দিয়ে cart HTML update ── */
+    const possibleSections = [
+      'cart-drawer',
+      'ajax-cart',
+      'cart-notification',
+      'cart-items',
+      'mini-cart',
+      'cart-sidebar',
+      'header',
+      'cart-icon-bubble',
+      'cart-bubble',
+    ];
+
+    try {
+      const res = await fetch(`/?sections=${possibleSections.join(',')}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+
+      if (res.ok) {
+        const sections = await res.json();
+
+        Object.entries(sections).forEach(([id, html]) => {
+          const el = document.getElementById(`shopify-section-${id}`);
+          if (!el) return;
+
+          const parser     = new DOMParser();
+          const doc        = parser.parseFromString(html, 'text/html');
+          const newSection = doc.getElementById(`shopify-section-${id}`);
+
+          if (newSection) {
+            el.innerHTML = newSection.innerHTML;
+          } else {
+            /* Fallback: পুরো HTML-টাই inject করো */
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const inner = tmp.firstElementChild;
+            if (inner) el.innerHTML = inner.innerHTML;
+          }
+        });
+      }
+    } catch (e) { /* silent */ }
+
+    /* ── STEP 2: Cart count সব জায়গায় update ── */
+    try {
+      const cartRes = await fetch('/cart.js');
+      const cart    = await cartRes.json();
+      const count   = cart.item_count;
+
+      const countSelectors = [
+        '[data-cart-count]',
+        '[data-cart-item-count]',
+        '[data-cart-quantity]',
+        '.cart-count',
+        '.cart__count',
+        '.header__cart-count',
+        '.cart-count-bubble',
+        '.cart-count-bubble span',
+        '#cart-count',
+        '#CartCount',
+        '.js-cart-count',
+        '.mini-cart-count',
+        '.cart-indicator',
+        '[data-header-cart-count]',
+        '.cart-item-count',
+      ];
+
+      document.querySelectorAll(countSelectors.join(',')).forEach(el => {
+        el.textContent = count;
+        el.setAttribute('data-count', count);
+
+        /* অনেক theme 0 হলে hidden করে রাখে — সেটা show করো */
+        if (count > 0) {
+          el.removeAttribute('hidden');
+          el.style.display   = '';
+          el.style.visibility = '';
+          el.classList.remove('hidden', 'is-hidden', 'hide', 'd-none');
+
+          /* Parent hidden থাকলে সেটাও দেখাও */
+          const parent = el.closest('[hidden], .hidden, .is-hidden');
+          if (parent) {
+            parent.removeAttribute('hidden');
+            parent.classList.remove('hidden', 'is-hidden');
+          }
+        }
+      });
+    } catch (e) { /* silent */ }
+
+    /* ── STEP 3: Theme events fire করো ── */
+    const cartEvents = [
+      'theme:cart:open',
+      'cart:open',
+      'cart:toggle',
+      'cart-drawer:open',
+      'CartDrawer:open',
+      'cart:refresh',
+      'cart:updated',
+      'header:cart-update',
+      'ajaxCart:loaded',
+    ];
+
+    cartEvents.forEach(name => {
+      try { document.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: { open: true } })); } catch(e) {}
+      try { window.dispatchEvent(new CustomEvent(name,   { bubbles: true, detail: { open: true } })); } catch(e) {}
+    });
+
+    /* ── STEP 4: Drawer ইতিমধ্যে open কিনা check করো ── */
+    const drawerAlreadyOpen = document.querySelector(
+      '.cart-drawer--open, ' +
+      '.cart-drawer.is-open, ' +
+      '.cart-drawer.active, ' +
+      '[data-cart-drawer][open], ' +
+      '.drawer--open, ' +
+      '.mini-cart.is-visible, ' +
+      '.cart-popup--visible, ' +
+      '.cart-sidebar--open, ' +
+      '.ajax-cart--open, ' +
+      '[data-cart-open="true"]'
+    );
+
+    if (!drawerAlreadyOpen) {
+      /* Fallback: drawer toggle button click করো */
+      const drawerTriggers = [
+        '[data-cart-toggle]',
+        '[data-drawer-toggle="cart-drawer"]',
+        '[data-drawer-toggle="ajax-cart"]',
+        '[data-open-cart]',
+        '[data-cart-open]',
+        '[data-toggle="cart"]',
+        '[data-action="cart"]',
+        '.btn-cart',
+        '.cart-btn',
+        '.mini-cart-trigger',
+        '.js-toggle-cart',
+        '.cart__toggle',
+        '#cart-icon-bubble',
+        '.header__icon--cart',
+        '[href="/cart"] .cart-count-bubble',
+        '.cart-notification-toggle',
+        '[data-target="#cart-drawer"]',
+        '[data-bs-target="#cart-drawer"]',
+      ];
+
+      for (const sel of drawerTriggers) {
+        const btn = document.querySelector(sel);
+        if (btn) {
+          btn.click();
+          break;
+        }
+      }
+    }
+  }
+
+  /* ── BUY NOW / ADD TO CART ────────────────────── */
+  function initBuyButtons(section) {
+    section.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-variant-id]');
+      if (!btn) return;
+
+      const action    = btn.dataset.action;  /* 'atc' বা 'buynow' */
+      const variantId = btn.dataset.variantId;
+      const fieldId   = btn.dataset.fieldId;
+      const fieldName = btn.dataset.fieldName;
+      const required  = btn.dataset.fieldRequired === 'true';
+
+      if (!variantId) return;
+
+      /* Custom field validate করো */
+      const fieldEl    = fieldId ? document.getElementById(fieldId) : null;
+      const fieldValue = fieldEl ? fieldEl.value.trim() : '';
+
+      if (required && fieldValue === '') {
+        if (fieldEl) {
+          fieldEl.classList.add('pts-field-input--error');
+          fieldEl.focus();
+          fieldEl.setAttribute('aria-invalid', 'true');
+          fieldEl.animate([
+            { transform: 'translateX(-4px)' },
+            { transform: 'translateX(4px)' },
+            { transform: 'translateX(-4px)' },
+            { transform: 'translateX(0)' }
+          ], { duration: 300, iterations: 1 });
+        }
+        return;
+      }
+      if (fieldEl) {
+        fieldEl.classList.remove('pts-field-input--error');
+        fieldEl.removeAttribute('aria-invalid');
+      }
+
+      /* Cart payload তৈরি করো */
+      const body = { id: parseInt(variantId, 10), quantity: 1, properties: {} };
+      if (fieldName && fieldValue !== '') body.properties[fieldName] = fieldValue;
+
+      /* Loading state চালু করো */
+      btn.classList.add('pts-btn--loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/cart/add.js', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body:    JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.description || 'Cart add failed');
+        }
+
+        if (action === 'atc') {
+          /* ✅ Toast দেখাও */
+          showToast(section, 'Added to cart successfully!');
+
+          /* ✅ Cart refresh + drawer open — real-time, no page reload */
+          await refreshCartAndOpenDrawer();
+
+        } else {
+          /* Buy Now → সরাসরি checkout-এ যাও */
+          window.location.href = '/checkout';
+        }
+
+      } catch (err) {
+        console.error('[ProductTabs] Cart error:', err);
+        showToast(section, err.message || 'Something went wrong. Please try again.', true);
+      } finally {
+        btn.classList.remove('pts-btn--loading');
+        btn.disabled = false;
+      }
+    });
+  }
+
+  /* ── TOAST ────────────────────────────────────── */
+  function showToast(section, msg, isError) {
+    const toast = qs('.pts-toast', section);
+    if (!toast) return;
+    toast.querySelector('.pts-toast-msg').textContent = msg;
+    toast.classList.toggle('pts-toast--error', !!isError);
+    toast.classList.add('pts-toast--visible');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('pts-toast--visible'), 3000);
+  }
+
+  /* ── INIT ─────────────────────────────────────── */
+  function init() {
+    const section = document.getElementById(`section-${SECTION_ID}`);
+    if (!section) return;
+    initTabs(section);
+    initThumbs(section);
+    initVariants(section);
+    initBuyButtons(section);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+{% stylesheet %}
+/* ============================================================
+   section-product-tabs.css
+   ============================================================ */
+
+.pts-container {
+  --pts-accent:       #ffffff;
+  --pts-accent-hover: #e0e0e0;
+  --pts-text:         #ffffff;
+  --pts-bg:           #0a0a0a;
+  --pts-border:       #333333;
+  --pts-radius:       12px;
+  --pts-tab-gap:      8px;
+  --pts-transition:   0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── SECTION WRAP ───────────────────────────────── */
+.product-tabs-section {
+  padding: 60px 0 20px;
+  background: var(--pts-bg);
+  color: var(--pts-text);
+  font-family: inherit;
+}
+.pts-container {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── HEADING ────────────────────────────────────── */
+.pts-heading-wrap {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.pts-section-heading {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.pts-section-subheading {
+  font-size: 1rem;
+  color: #aaa;
+  margin: 0;
+  max-width: 520px;
+  margin-inline: auto;
+  line-height: 1.6;
+}
+
+/* ── TAB NAV WRAP ───────────────────────────────── */
+.pts-tab-nav-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+/* ── TAB NAV ────────────────────────────────────── */
+.pts-tab-nav {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--pts-tab-gap);
+  padding: 6px;
+  background: #1a1a1a;
+  border-radius: 14px;
+  border: 1px solid var(--pts-border);
+  margin-bottom: 36px;
+}
+.pts-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--pts-transition), background var(--pts-transition);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.pts-tab-btn:hover {
+  color: #ffffff;
+  background: #2a2a2a;
+}
+.pts-tab-btn--active {
+  color: #ffffff;
+  background: #E84E4E;
+}
+.pts-tab-icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* ── PANELS ─────────────────────────────────────── */
+.pts-panel {
+  display: none;
+  animation: ptsFadeIn 0.3s ease;
+}
+.pts-panel--active { display: block; }
+@keyframes ptsFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── PRODUCT CARD ───────────────────────────────── */
+.pts-product-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .pts-product-card { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* ── PRODUCT INFO ───────────────────────────────── */
+.pts-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pts-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+.pts-badge--sale     { background: #3d1414; color: #ff6b6b; }
+.pts-badge--sold-out { background: #222; color: #888; }
+
+.pts-product-vendor {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #888;
+  margin: 0;
+}
+.pts-product-title {
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--pts-text);
+}
+
+/* PRICE */
+.pts-price-wrap { display: flex; align-items: baseline; gap: 10px; }
+.pts-price { font-size: 1.4rem; font-weight: 700; color: var(--pts-text); }
+.pts-price--sale    { color: #ff6b6b; }
+.pts-price--compare { font-size: 1rem; font-weight: 400; color: #555; text-decoration: line-through; }
+
+/* RATING */
+.pts-rating { display: flex; align-items: center; gap: 4px; }
+.pts-star         { color: #444; font-size: 1rem; }
+.pts-star--filled { color: #f4b942; }
+.pts-rating-count { font-size: 0.8rem; color: #888; margin-left: 4px; }
+
+/* DESCRIPTION */
+.pts-product-desc { font-size: 0.92rem; line-height: 1.7; color: #aaa; margin: 0; }
+
+/* HIGHLIGHTS */
+.pts-highlights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pts-highlights li { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #ccc; }
+.pts-highlights svg { flex-shrink: 0; color: var(--pts-accent); }
+
+/* VARIANTS */
+.pts-variants { display: flex; flex-direction: column; gap: 12px; }
+.pts-variant-group { display: flex; flex-direction: column; gap: 8px; }
+.pts-variant-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #888; }
+.pts-variant-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.pts-variant-swatch {
+  padding: 6px 14px;
+  border: 1.5px solid #333;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #ccc;
+  transition: border-color var(--pts-transition), background var(--pts-transition), color var(--pts-transition);
+  font-weight: 500;
+}
+.pts-variant-swatch:hover { border-color: #fff; color: #fff; }
+.pts-variant-swatch--selected { border-color: #fff; background: #fff; color: #000; }
+
+/* CUSTOM FIELD */
+.pts-custom-field { display: flex; flex-direction: column; gap: 6px; }
+.pts-field-label { font-size: 0.85rem; font-weight: 600; color: var(--pts-text); display: flex; align-items: center; gap: 4px; }
+.pts-required { color: #ff6b6b; font-weight: 700; }
+.pts-field-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #fff;
+  background: #1a1a1a;
+  transition: border-color var(--pts-transition), box-shadow var(--pts-transition);
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.pts-field-input--textarea { resize: vertical; min-height: 80px; }
+.pts-field-input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+}
+.pts-field-input--error { border-color: #ff6b6b !important; box-shadow: 0 0 0 3px rgba(255,107,107,0.15) !important; }
+.pts-field-hint { font-size: 0.78rem; color: #666; margin: 0; }
+
+/* ACTIONS */
+.pts-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ADD TO CART button */
+.pts-btn-atc {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 20px;
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid #444;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--pts-transition), border-color var(--pts-transition), color var(--pts-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.pts-btn-atc:hover { background: #1a1a1a; border-color: #fff; color: #fff; }
+.pts-btn-atc__loader { display: none; }
+.pts-btn-atc.pts-btn--loading .pts-btn-atc__text { visibility: hidden; }
+.pts-btn-atc.pts-btn--loading .pts-btn-atc__loader {
+  display: block;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+/* CHECKOUT / BUY NOW button */
+.pts-btn-buy {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 28px;
+  background: #E84E4E;
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--pts-transition), transform var(--pts-transition), box-shadow var(--pts-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+}
+.pts-btn-buy:hover {
+  background: #E84E4E;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+}
+.pts-btn-buy:active { transform: translateY(0); }
+.pts-btn-buy--disabled { background: #333; color: #666; cursor: not-allowed; }
+.pts-btn-buy--disabled:hover { transform: none; box-shadow: none; }
+.pts-btn-buy__loader { display: none; }
+.pts-btn-buy.pts-btn--loading .pts-btn-buy__text { visibility: hidden; }
+.pts-btn-buy.pts-btn--loading .pts-btn-buy__loader {
+  display: block;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+.pts-view-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #aaa;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--pts-transition), border-color var(--pts-transition);
+  width: fit-content;
+}
+.pts-view-details:hover { color: #fff; border-bottom-color: #fff; }
+
+/* ── PRODUCT MEDIA ──────────────────────────────── */
+.pts-product-media { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 768px) { .pts-product-media { order: -1; } }
+
+.pts-image-wrapper { display: flex; flex-direction: column; gap: 10px; }
+.pts-image-link { display: block; border-radius: var(--pts-radius); overflow: hidden; }
+.pts-product-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.25s ease, transform 0.4s ease;
+  border-radius: var(--pts-radius);
+}
+.pts-product-image:hover { transform: scale(1.02); }
+.pts-image--swap { opacity: 0.4; }
+
+.pts-image-placeholder {
+  aspect-ratio: 4/3;
+  background: #1a1a1a;
+  border-radius: var(--pts-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pts-placeholder-svg { width: 80px; opacity: 0.2; }
+
+/* THUMBNAILS */
+.pts-image-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.pts-thumb {
+  width: 70px; height: 70px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  transition: border-color var(--pts-transition), opacity var(--pts-transition);
+  flex-shrink: 0;
+}
+.pts-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pts-thumb:hover { border-color: #555; }
+.pts-thumb--active { border-color: #fff; }
+
+/* ── TOAST ──────────────────────────────────────── */
+.pts-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  background: #fff;
+  color: #0a0a0a;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.pts-toast--visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.pts-toast--error   { background: #c0392b; color: #fff; }
+.pts-toast svg { flex-shrink: 0; }
+
+/* ── EMPTY STATES ───────────────────────────────── */
+.pts-empty-tab, .pts-no-blocks {
+  text-align: center;
+  padding: 48px 24px;
+  background: #111;
+  border-radius: var(--pts-radius);
+  border: 2px dashed #333;
+  color: #666;
+  font-size: 0.9rem;
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product Tabs",
+  "tag": "div",
+  "class": "shopify-section-product-tabs",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Heading"
+    },
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Heading",
+      "default": "Featured Products"
+    },
+    {
+      "type": "text",
+      "id": "section_subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "header",
+      "content": "Display Options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show product vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show sale / sold-out badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_atc",
+      "label": "Show Add to Cart button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_details",
+      "label": "Show 'View full details' link",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Tab Layout"
+    },
+    {
+      "type": "range",
+      "id": "tab_gap",
+      "label": "Tab spacing",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent / button color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#333333"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_tab",
+      "name": "Product Tab",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Tab Settings"
+        },
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab label",
+          "default": "Product Tab",
+          "info": "Leave blank to use the product title"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_icon",
+          "label": "Tab icon (optional)"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "textarea",
+          "id": "highlights",
+          "label": "Product highlights",
+          "info": "Separate each highlight with a | character. Example: Free shipping | 30-day returns | Eco-friendly"
+        },
+        {
+          "type": "header",
+          "content": "Custom Text Field"
+        },
+        {
+          "type": "text",
+          "id": "custom_field_label",
+          "label": "Field label",
+          "default": "Add Your Personalization"
+        },
+        {
+          "type": "text",
+          "id": "custom_field_name",
+          "label": "Property name (sent to checkout)",
+          "default": "Custom Text",
+          "info": "This name appears in the order and at checkout"
+        },
+        {
+          "type": "select",
+          "id": "custom_field_type",
+          "label": "Field type",
+          "default": "text",
+          "options": [
+            { "value": "text",     "label": "Single-line text" },
+            { "value": "textarea", "label": "Multi-line text" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "custom_field_placeholder",
+          "label": "Placeholder text",
+          "default": "Enter your custom text here..."
+        },
+        {
+          "type": "text",
+          "id": "custom_field_hint",
+          "label": "Hint text (shown below field)"
+        },
+        {
+          "type": "checkbox",
+          "id": "custom_field_required",
+          "label": "Make field required",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Product Tabs",
+      "blocks": [
+        { "type": "product_tab", "settings": { "tab_label": "Tab 1" } },
+        { "type": "product_tab", "settings": { "tab_label": "Tab 2" } },
+        { "type": "product_tab", "settings": { "tab_label": "Tab 3" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,623 @@
+{% comment %}
+  Vitalight Therapy – Dynamic Product Showcase
+  File: sections/vitalight-showcase.liquid
+{% endcomment %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+<style>
+#vl-{{ section.id }} {
+  --bg:         {{ section.settings.background_color }};
+  --text:       {{ section.settings.text_color }};
+  --muted:      {{ section.settings.muted_color }};
+  --accent:     {{ section.settings.accent_color }};
+  --btn-bg:     {{ section.settings.button_color }};
+  --btn-txt:    {{ section.settings.button_text_color }};
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Wrapper ── */
+#vl-{{ section.id }} .vl-wrap {
+  {% case section.settings.container_width %}
+    {% when 'full' %}
+      max-width: 100%;
+      padding: 80px 40px;
+    {% when 'wide' %}
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    {% when 'normal' %}
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 80px 32px;
+    {% when 'narrow' %}
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 32px;
+  {% endcase %}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 56px;
+}
+
+/* ── Headline ── */
+#vl-{{ section.id }} .vl-headline {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(26px, 3.8vw, 50px);
+  color: var(--text);
+  text-align: center;
+  line-height: 1.18;
+  letter-spacing: -0.4px;
+  max-width: 760px;
+  margin: 0;
+}
+
+/* ── 3-col grid ── */
+#vl-{{ section.id }} .vl-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  align-items: center;
+  gap: 56px;
+  width: 100%;
+}
+
+/* ══ LEFT ══ */
+#vl-{{ section.id }} .vl-left {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+#vl-{{ section.id }} .vl-prod-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--text);
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+
+#vl-{{ section.id }} .vl-prod-price {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+#vl-{{ section.id }} .vl-prod-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Swatches */
+#vl-{{ section.id }} .vl-swatch-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+#vl-{{ section.id }} .vl-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#vl-{{ section.id }} .vl-swatch {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  outline: 2px solid transparent;
+  transition: transform .2s, border-color .2s, outline-color .2s;
+  flex-shrink: 0;
+  background: #eee;
+  position: relative;
+}
+
+#vl-{{ section.id }} .vl-swatch img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+#vl-{{ section.id }} .vl-swatch .vl-dot {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 12px; height: 12px;
+  border-radius: 50%; border: 1.5px solid #fff;
+}
+
+#vl-{{ section.id }} .vl-swatch:hover { transform: scale(1.08); }
+#vl-{{ section.id }} .vl-swatch.active { border-color: var(--text); outline-color: var(--text); }
+
+/* ── CTA ── */
+#vl-{{ section.id }} .vl-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── BUTTON — image style, black, square, full-width option ── */
+#vl-{{ section.id }} .vl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--btn-bg);
+  color: var(--btn-txt);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 18px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s;
+  {% if section.settings.button_width == 'full' %}
+    width: 100%;
+  {% elsif section.settings.button_width == 'large' %}
+    width: 260px;
+  {% elsif section.settings.button_width == 'medium' %}
+    width: 200px;
+  {% else %}
+    width: fit-content;
+    min-width: 160px;
+  {% endif %}
+}
+
+/* slide-in fill on hover */
+#vl-{{ section.id }} .vl-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: translateX(-101%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+#vl-{{ section.id }} .vl-btn:hover::before {
+  transform: translateX(0);
+}
+
+#vl-{{ section.id }} .vl-btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+#vl-{{ section.id }} .vl-btn-plus {
+  position: relative;
+  z-index: 1;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  transition: transform 0.3s;
+}
+
+#vl-{{ section.id }} .vl-btn:hover .vl-btn-plus {
+  transform: rotate(90deg);
+}
+
+/* Delivery */
+#vl-{{ section.id }} .vl-delivery {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ══ CENTER ══ */
+#vl-{{ section.id }} .vl-center {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 440px;
+}
+
+#vl-{{ section.id }} .vl-main-img {
+  max-height: 440px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,.15));
+  transition: opacity .32s ease, transform .32s ease;
+}
+
+#vl-{{ section.id }} .vl-main-img.fade {
+  opacity: 0;
+  transform: scale(.95);
+}
+
+/* Float */
+#vl-{{ section.id }} .vl-main-img.vl-float {
+  animation: vlFloat 4.5s ease-in-out infinite;
+}
+
+@keyframes vlFloat {
+  0%, 100% { transform: translateY(0px) drop-shadow(0 24px 48px rgba(0,0,0,.15)); }
+  50%       { transform: translateY(-14px) drop-shadow(0 36px 56px rgba(0,0,0,.12)); }
+}
+
+/* Callouts */
+#vl-{{ section.id }} .vl-callout {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text);
+  line-height: 1.4;
+  max-width: 130px;
+  pointer-events: none;
+}
+#vl-{{ section.id }} .vl-callout-line {
+  width: 36px; height: 1px;
+  background: var(--text); opacity: .35;
+  flex-shrink: 0;
+}
+#vl-{{ section.id }} .vl-callout-top    { top: 8%; left: -4%; flex-direction: row-reverse; text-align: right; }
+#vl-{{ section.id }} .vl-callout-bottom { bottom: 14%; right: -6%; }
+
+/* ══ RIGHT – steps ══ */
+#vl-{{ section.id }} .vl-steps { display: flex; flex-direction: column; gap: 28px; }
+
+#vl-{{ section.id }} .vl-step {
+  display: flex;
+  gap: 14px;
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+  transition: border-color 0.3s;
+}
+
+#vl-{{ section.id }} .vl-step:hover { border-left-color: var(--accent); }
+
+#vl-{{ section.id }} .vl-step-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--accent);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 22px;
+  padding-top: 1px;
+}
+
+#vl-{{ section.id }} .vl-step-title {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+#vl-{{ section.id }} .vl-step-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* ══ SCROLL REVEAL ══ */
+#vl-{{ section.id }} .vl-reveal,
+#vl-{{ section.id }} .vl-reveal-left,
+#vl-{{ section.id }} .vl-reveal-right {
+  opacity: 0;
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+#vl-{{ section.id }} .vl-reveal       { transform: translateY(28px); }
+#vl-{{ section.id }} .vl-reveal-left  { transform: translateX(-28px); }
+#vl-{{ section.id }} .vl-reveal-right { transform: translateX(28px); }
+
+#vl-{{ section.id }} .vl-reveal.vl-in,
+#vl-{{ section.id }} .vl-reveal-left.vl-in,
+#vl-{{ section.id }} .vl-reveal-right.vl-in {
+  opacity: 1;
+  transform: none;
+}
+
+#vl-{{ section.id }} .vl-d1 { transition-delay: 0.10s; }
+#vl-{{ section.id }} .vl-d2 { transition-delay: 0.20s; }
+#vl-{{ section.id }} .vl-d3 { transition-delay: 0.30s; }
+#vl-{{ section.id }} .vl-d4 { transition-delay: 0.40s; }
+#vl-{{ section.id }} .vl-d5 { transition-delay: 0.50s; }
+
+/* fade helper for swatch switch */
+#vl-{{ section.id }} .vl-fade { transition: opacity .25s; }
+#vl-{{ section.id }} .vl-fade.out { opacity: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  #vl-{{ section.id }} .vl-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  #vl-{{ section.id }} .vl-left,
+  #vl-{{ section.id }} .vl-cta { align-items: center; }
+  #vl-{{ section.id }} .vl-swatches { justify-content: center; }
+  #vl-{{ section.id }} .vl-step { text-align: left; }
+  #vl-{{ section.id }} .vl-callout { display: none; }
+  #vl-{{ section.id }} .vl-btn { width: 100% !important; }
+}
+
+@media (max-width: 480px) {
+  #vl-{{ section.id }} .vl-wrap { padding: 48px 18px; gap: 36px; }
+}
+</style>
+
+<section id="vl-{{ section.id }}">
+  <div class="vl-wrap">
+
+    <h2 class="vl-headline vl-reveal">{{ section.settings.headline }}</h2>
+
+    <div class="vl-grid">
+
+      <!-- LEFT -->
+      <div class="vl-left">
+
+        <div class="vl-reveal-left vl-d1">
+          <p class="vl-prod-title vl-fade" id="vl-title-{{ section.id }}">
+            {% if section.blocks[0].settings.product != blank %}{{ section.blocks[0].settings.product.title }}{% endif %}
+          </p>
+          <p class="vl-prod-price vl-fade" id="vl-price-{{ section.id }}">
+            {% if section.blocks[0].settings.product != blank %}{{ section.blocks[0].settings.product.price | money }}{% endif %}
+          </p>
+          <p class="vl-prod-desc vl-fade" id="vl-desc-{{ section.id }}">
+            {% if section.blocks[0].settings.product != blank %}{{ section.blocks[0].settings.product.description | strip_html | truncate: 160 }}{% endif %}
+          </p>
+        </div>
+
+        <div class="vl-reveal-left vl-d2">
+          <p class="vl-swatch-label">{{ section.settings.color_label }}</p>
+          <div class="vl-swatches" role="radiogroup">
+            {% for block in section.blocks %}
+              {% if block.type == 'variant' and block.settings.product != blank %}
+                {% assign prod = block.settings.product %}
+                <button
+                  class="vl-swatch {% if forloop.first %}active{% endif %}"
+                  role="radio"
+                  aria-checked="{% if forloop.first %}true{% else %}false{% endif %}"
+                  aria-label="{{ block.settings.color_name | default: prod.title }}"
+                  data-title="{{ prod.title | escape }}"
+                  data-price="{{ prod.price | money | escape }}"
+                  data-desc="{{ prod.description | strip_html | truncate: 160 | escape }}"
+                  data-img="{{ prod.featured_image | img_url: '800x' }}"
+                  data-url="{{ prod.url }}"
+                  {{ block.shopify_attributes }}
+                >
+                  {% if prod.featured_image %}
+                    <img src="{{ prod.featured_image | img_url: '120x120', crop: 'center' }}" alt="{{ prod.title | escape }}" loading="lazy">
+                  {% endif %}
+                  {% if block.settings.swatch_color != blank %}
+                    <span class="vl-dot" style="background:{{ block.settings.swatch_color }};"></span>
+                  {% endif %}
+                </button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="vl-cta vl-reveal-left vl-d3">
+          <a
+            href="{% if section.blocks[0].settings.product != blank %}{{ section.blocks[0].settings.product.url }}{% else %}#{% endif %}"
+            class="vl-btn"
+            id="vl-btn-{{ section.id }}"
+          >
+            <span class="vl-btn-text">{{ section.settings.button_text }}</span>
+            <span class="vl-btn-plus">+</span>
+          </a>
+          <span class="vl-delivery">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13" rx="1"/>
+              <path d="M16 8h4l3 5v3h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            {{ section.settings.delivery_text }}
+          </span>
+        </div>
+
+      </div>
+
+      <!-- CENTER -->
+      <div class="vl-center vl-reveal vl-d2">
+        {% if section.blocks[0].settings.product != blank %}
+          <img
+            id="vl-img-{{ section.id }}"
+            class="vl-main-img"
+            src="{{ section.blocks[0].settings.product.featured_image | img_url: '800x' }}"
+            alt="{{ section.blocks[0].settings.product.title | escape }}"
+            width="400" height="440" loading="lazy"
+          >
+        {% else %}
+          {{ 'product-1' | placeholder_svg_tag: 'vl-main-img' }}
+        {% endif %}
+
+        {% if section.settings.callout_top != blank %}
+          <div class="vl-callout vl-callout-top">
+            <div class="vl-callout-line"></div>
+            <span>{{ section.settings.callout_top }}</span>
+          </div>
+        {% endif %}
+
+        {% if section.settings.callout_bottom != blank %}
+          <div class="vl-callout vl-callout-bottom">
+            <div class="vl-callout-line"></div>
+            <span>{{ section.settings.callout_bottom }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT -->
+      <div class="vl-steps">
+        {% for i in (1..3) %}
+          {% assign t = 'step_' | append: i | append: '_title' %}
+          {% assign d = 'step_' | append: i | append: '_desc' %}
+          {% if section.settings[t] != blank %}
+            <div class="vl-step vl-reveal-right vl-d{{ i }}">
+              <span class="vl-step-num">{{ i }}.</span>
+              <div>
+                <p class="vl-step-title">{{ section.settings[t] }}</p>
+                <p class="vl-step-body">{{ section.settings[d] }}</p>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var sid      = '{{ section.id }}';
+  var root     = document.getElementById('vl-' + sid);
+  if (!root) return;
+
+  var mainImg  = root.querySelector('#vl-img-'   + sid);
+  var titleEl  = root.querySelector('#vl-title-' + sid);
+  var priceEl  = root.querySelector('#vl-price-' + sid);
+  var descEl   = root.querySelector('#vl-desc-'  + sid);
+  var btnEl    = root.querySelector('#vl-btn-'   + sid);
+  var swatches = root.querySelectorAll('.vl-swatch');
+
+  /* ── Scroll reveal + float trigger ── */
+  var revealEls = root.querySelectorAll('.vl-reveal, .vl-reveal-left, .vl-reveal-right');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('vl-in');
+        if (e.target.classList.contains('vl-center') && mainImg) {
+          setTimeout(function () { mainImg.classList.add('vl-float'); }, 700);
+        }
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(function (el) { io.observe(el); });
+
+  /* ── Swatch switch ── */
+  function fadeSet(el, val) {
+    if (!el) return;
+    el.classList.add('out');
+    setTimeout(function () { el.textContent = val; el.classList.remove('out'); }, 220);
+  }
+
+  swatches.forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      if (this.classList.contains('active')) return;
+      swatches.forEach(function (s) { s.classList.remove('active'); s.setAttribute('aria-checked','false'); });
+      this.classList.add('active');
+      this.setAttribute('aria-checked','true');
+
+      var newImg = this.dataset.img;
+      if (mainImg && newImg) {
+        mainImg.classList.remove('vl-float');
+        mainImg.classList.add('fade');
+        setTimeout(function () {
+          mainImg.src = newImg;
+          function done() { mainImg.classList.remove('fade'); setTimeout(function(){ mainImg.classList.add('vl-float'); }, 100); }
+          mainImg.onload = done;
+          if (mainImg.complete) done();
+        }, 280);
+      }
+
+      fadeSet(titleEl, this.dataset.title);
+      fadeSet(priceEl, this.dataset.price);
+      fadeSet(descEl,  this.dataset.desc);
+      if (btnEl && this.dataset.url) btnEl.href = this.dataset.url;
+    });
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Vitalight Showcase",
+  "tag": "section",
+  "class": "vitalight-showcase",
+  "blocks": [
+    {
+      "type": "variant",
+      "name": "Product Variant",
+      "settings": [
+        { "type": "product", "id": "product",      "label": "Select product" },
+        { "type": "text",    "id": "color_name",   "label": "Colour name",          "default": "Deep Teal" },
+        { "type": "color",   "id": "swatch_color", "label": "Dot colour on swatch", "default": "#0d6e6e"   }
+      ]
+    }
+  ],
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Content width",
+      "default": "wide",
+      "options": [
+        { "value": "narrow", "label": "Narrow (900px)"  },
+        { "value": "normal", "label": "Normal (1160px)" },
+        { "value": "wide",   "label": "Wide (1400px)"   },
+        { "value": "full",   "label": "Full width"      }
+      ]
+    },
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "headline",    "label": "Headline",             "default": "Vitalight energizes and heals in the palm of your hand" },
+    { "type": "text", "id": "color_label", "label": "Colour picker label",  "default": "Choose your colour:" },
+    { "type": "text", "id": "callout_top",    "label": "Callout – top",    "default": "Activates on touch, tracks your session" },
+    { "type": "text", "id": "callout_bottom", "label": "Callout – bottom", "default": "Gentle light guides your breathing" },
+    { "type": "header", "content": "Steps" },
+    { "type": "text",     "id": "step_1_title", "label": "Step 1 title",       "default": "Vitalight activates, inhale" },
+    { "type": "textarea", "id": "step_1_desc",  "label": "Step 1 description", "default": "Feel the warm light expand in your hand. Breathe in deeply." },
+    { "type": "text",     "id": "step_2_title", "label": "Step 2 title",       "default": "Vitalight pulses, exhale" },
+    { "type": "textarea", "id": "step_2_desc",  "label": "Step 2 description", "default": "The light softens and dims. Breathe out. Feel calm with every cycle." },
+    { "type": "text",     "id": "step_3_title", "label": "Step 3 title",       "default": "With or without an app" },
+    { "type": "textarea", "id": "step_3_desc",  "label": "Step 3 description", "default": "Set your own rhythm, get real-time biofeedback, or use Vitalight standalone." },
+    { "type": "header", "content": "Button" },
+    { "type": "text", "id": "button_text", "label": "Button text", "default": "Shop now" },
+    {
+      "type": "select",
+      "id": "button_width",
+      "label": "Button width",
+      "default": "full",
+      "options": [
+        { "value": "auto",   "label": "Auto (fit content)" },
+        { "value": "medium", "label": "Medium (200px)"     },
+        { "value": "large",  "label": "Large (260px)"      },
+        { "value": "full",   "label": "Full width"         }
+      ]
+    },
+    { "type": "text", "id": "delivery_text", "label": "Delivery note", "default": "Fast delivery in 1–3 business days" },
+    { "type": "header", "content": "Colours" },
+    { "type": "color", "id": "background_color", "label": "Background",                   "default": "#e8e4db" },
+    { "type": "color", "id": "text_color",        "label": "Primary text",                 "default": "#1a1a1a" },
+    { "type": "color", "id": "muted_color",        "label": "Muted text",                  "default": "#6b6b6b" },
+    { "type": "color", "id": "accent_color",       "label": "Accent (hover fill, steps)",  "default": "#0d6e6e" },
+    { "type": "color", "id": "button_color",       "label": "Button background",           "default": "#111111" },
+    { "type": "color", "id": "button_text_color",  "label": "Button text",                 "default": "#ffffff" }
+  ],
+  "presets": [
+    {
+      "name": "Vitalight Showcase",
+      "settings": { "container_width": "wide", "button_width": "full", "button_color": "#111111" },
+      "blocks": [
+        { "type": "variant" },
+        { "type": "variant" },
+        { "type": "variant" }
+      ]
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

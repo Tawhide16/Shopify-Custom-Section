@@ -1,0 +1,1315 @@
+{% comment %}
+  ============================================================
+  Section: GSP Flavor Picker
+  File:    sections/gsp-flavor-picker.liquid
+
+  OLIPOP-style product hover section:
+  - Background wipes in from the left on hover
+  - Active product lifts and scales up
+  - Inactive products fade and shrink
+  - Product name, tagline and CTA fade in below
+  - Fixed: Star ratings now properly stored in data attributes
+  ============================================================
+{% endcomment %}
+
+{%- style -%}
+  #gsp-fp-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: {{ section.settings.default_bg }};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: {{ section.settings.section_padding_v }}px 1rem {{ section.settings.section_padding_v }}px;
+    min-height: {{ section.settings.section_min_height }}px;
+    font-family: inherit;
+  }
+
+  #gsp-fp-{{ section.id }} * {
+    box-sizing: border-box;
+  }
+
+  /* ── Background wipe ── */
+  #gsp-fp-{{ section.id }} .fp-wipe {
+    position: absolute;
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform {{ section.settings.wipe_duration }}ms cubic-bezier(0.77, 0, 0.18, 1),
+                background-color 0.15s ease;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-wipe.is-active {
+    transform: scaleX(1);
+  }
+
+  /* ── Section eyebrow ── */
+  #gsp-fp-{{ section.id }} .fp-eyebrow {
+    position: relative;
+    z-index: 2;
+    font-size: {{ section.settings.eyebrow_size }}px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: {{ section.settings.default_text }};
+    margin-bottom: {{ section.settings.eyebrow_gap }}px;
+    transition: color 0.4s ease;
+    text-align: center;
+  }
+
+  /* ── Section heading ── */
+  #gsp-fp-{{ section.id }} .fp-heading {
+    position: relative;
+    z-index: 2;
+    font-size: {{ section.settings.heading_size }}px;
+    font-weight: {{ section.settings.heading_weight }};
+    color: {{ section.settings.default_text }};
+    margin: 0 0 {{ section.settings.heading_gap }}px;
+    transition: color 0.4s ease;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-family:"BEBAS NEUE";
+  }
+
+  /* ── Product track ── */
+  #gsp-fp-{{ section.id }} .fp-track {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: {{ section.settings.item_gap }}px;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: {{ section.settings.track_max_width }}px;
+  }
+
+  /* ── Individual item ── */
+  #gsp-fp-{{ section.id }} .fp-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+      transform {{ section.settings.item_duration }}ms cubic-bezier(0.77, 0, 0.18, 1),
+      opacity 0.4s ease;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-item.is-active {
+    transform: translateY(-{{ section.settings.lift_amount }}px) scale({{ section.settings.scale_active }});
+    z-index: 5;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-item.is-inactive {
+    opacity: {{ section.settings.inactive_opacity | divided_by: 100.0 }};
+    transform: scale({{ section.settings.scale_inactive }});
+  }
+
+  /* ── Circle ── */
+  #gsp-fp-{{ section.id }} .fp-circle {
+    width: {{ section.settings.circle_size }}px;
+    height: {{ section.settings.circle_size }}px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: box-shadow 0.3s ease;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-item.is-active .fp-circle {
+    box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: {{ section.settings.circle_img_fit }};
+    display: block;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-circle-placeholder {
+    font-size: {{ section.settings.circle_size | times: 0.4 | round }}px;
+    line-height: 1;
+  }
+
+  /* ── Item label ── */
+  #gsp-fp-{{ section.id }} .fp-label {
+    margin-top: {{ section.settings.label_gap }}px;
+    font-size: {{ section.settings.label_size }}px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    color: {{ section.settings.default_text }};
+    max-width: {{ section.settings.circle_size | plus: 20 }}px;
+    line-height: 1.3;
+    transition: color 0.4s ease, opacity 0.4s ease;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-item.is-inactive .fp-label {
+    opacity: 0.5;
+  }
+
+  /* ── Detail panel ── */
+  #gsp-fp-{{ section.id }} .fp-detail {
+    position: relative;
+    z-index: 2;
+    margin-top: {{ section.settings.detail_gap }}px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s ease 0.15s, transform 0.4s ease 0.15s;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-detail.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-detail-name {
+    font-size: {{ section.settings.detail_name_size }}px;
+    font-weight: {{ section.settings.detail_name_weight }};
+    letter-spacing: -0.01em;
+    transition: color 0.4s ease;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-detail-sub {
+    font-size: {{ section.settings.detail_sub_size }}px;
+    font-weight: 300;
+    font-style: italic;
+    transition: color 0.4s ease;
+    opacity: 0.85;
+    max-width: 36ch;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-detail-price {
+    font-size: {{ section.settings.detail_price_size }}px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: color 0.4s ease;
+    margin: 0;
+  }
+
+  /* ── Star Ratings ─────────────────────────────────── */
+  #gsp-fp-{{ section.id }} .fp-ratings-container {
+    margin: 0.5rem 0;
+    min-height: 24px;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-manual-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-stars {
+    display: flex;
+    gap: 0.25rem;
+    font-size: clamp(12px, 1.5vw, 16px);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-star {
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.2s ease;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-star.is-filled {
+    color: rgb(255, 255, 255);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-rating-count {
+    font-size: clamp(12px, 1vw, 14px);
+    opacity: 0.65;
+    font-weight: 300;
+  }
+
+  /* Judge Me widget styling */
+  #gsp-fp-{{ section.id }} .jdgm-widget {
+    font-size: clamp(12px, 1.2vw, 14px);
+  }
+
+  /* ── CTA button ── */
+  #gsp-fp-{{ section.id }} .fp-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: {{ section.settings.btn_padding_v }}px {{ section.settings.btn_padding_h }}px;
+    border-radius: 100px;
+    font-size: {{ section.settings.btn_font_size }}px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1.5px solid currentColor;
+    background: transparent;
+    transition:
+      background 0.2s ease,
+      color 0.4s ease,
+      border-color 0.4s ease,
+      opacity 0.4s ease 0.22s,
+      transform 0.4s ease 0.22s;
+    opacity: 0;
+    transform: translateY(8px);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-cta.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-cta:hover {
+    background: rgba(255,255,255,0.14);
+  }
+
+  #gsp-fp-{{ section.id }} .fp-cta svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ── Hint ── */
+  #gsp-fp-{{ section.id }} .fp-hint {
+    position: relative;
+    z-index: 2;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: {{ section.settings.default_text }};
+    opacity: 0.35;
+    margin-top: 1.5rem;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-hint.is-hidden {
+    opacity: 0;
+  }
+
+  /* ── Scroll indicator dots ── */
+  {%- if section.settings.show_dots -%}
+  #gsp-fp-{{ section.id }} .fp-dots {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+    margin-top: 1.5rem;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: {{ section.settings.default_text }};
+    opacity: 0.25;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: opacity 0.3s, transform 0.3s, background 0.4s ease;
+  }
+
+  #gsp-fp-{{ section.id }} .fp-dot.is-active {
+    opacity: 1;
+    transform: scale(1.55);
+  }
+  {%- endif -%}
+
+  /* ── MOBILE ── */
+  @media (max-width: 767px) {
+    #gsp-fp-{{ section.id }} {
+      padding: {{ section.settings.section_padding_v | times: 0.7 | round }}px 1rem;
+      min-height: auto;
+    }
+
+    #gsp-fp-{{ section.id }} .fp-track {
+      gap: {{ section.settings.item_gap | times: 0.6 | round }}px;
+    }
+
+    #gsp-fp-{{ section.id }} .fp-circle {
+      width: {{ section.settings.circle_size | times: 0.75 | round }}px;
+      height: {{ section.settings.circle_size | times: 0.75 | round }}px;
+    }
+
+    #gsp-fp-{{ section.id }} .fp-label {
+      font-size: {{ section.settings.label_size | minus: 1 }}px;
+    }
+
+    #gsp-fp-{{ section.id }} .fp-detail-name {
+      font-size: {{ section.settings.detail_name_size | times: 0.8 | round }}px;
+    }
+  }
+
+ .wave-divider-showcase {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  line-height: 0;
+  z-index: 3;
+}
+
+.wave-divider-showcase svg {
+  display: block;
+  width: 100%;
+  height: 120%;
+}
+{%- endstyle -%}
+
+<section
+  id="gsp-fp-{{ section.id }}"
+  aria-label="{{ section.settings.section_aria_label | default: 'Product flavor picker' | escape }}"
+>
+  <div class="fp-wipe" id="fp-wipe-{{ section.id }}" aria-hidden="true"></div>
+
+  {%- if section.settings.eyebrow != blank -%}
+    <p class="fp-eyebrow" id="fp-eyebrow-{{ section.id }}">
+      {{ section.settings.eyebrow }}
+    </p>
+  {%- endif -%}
+
+  {%- if section.settings.heading != blank -%}
+    <h2 class="fp-heading" id="fp-heading-{{ section.id }}">
+      {{ section.settings.heading }}
+    </h2>
+  {%- endif -%}
+
+  <div class="fp-track" id="fp-track-{{ section.id }}" role="list">
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'flavor' -%}
+        {%- liquid
+          assign item_product = block.settings.product
+          assign item_label   = block.settings.label | default: item_product.title | default: 'Product'
+          assign item_sub     = block.settings.tagline | default: item_product.description | strip_html | truncate: 80
+          assign item_url     = block.settings.custom_url | default: item_product.url | default: '#'
+          assign item_price   = item_product.price | money
+          assign item_bg      = block.settings.bg_color
+          assign item_text    = block.settings.text_color
+          assign item_accent  = block.settings.accent_color
+          assign item_circle  = block.settings.circle_bg
+          assign show_ratings = block.settings.show_ratings
+          assign use_judge_me = block.settings.use_judge_me_ratings
+          assign product_id   = item_product.id
+          assign manual_rating = block.settings.manual_rating
+          assign rating_count = block.settings.rating_count
+        -%}
+        <a
+          class="fp-item"
+          role="listitem"
+          data-fp-item
+          data-index="{{ forloop.index0 }}"
+          data-url="{{ item_url | escape }}"
+          data-bg="{{ item_bg }}"
+          data-text="{{ item_text }}"
+          data-accent="{{ item_accent }}"
+          data-name="{{ item_label | escape }}"
+          data-sub="{{ item_sub | escape }}"
+          data-price="{{ item_price | escape }}"
+          data-show-ratings="{{ show_ratings }}"
+          data-use-judge-me="{{ use_judge_me }}"
+          data-product-id="{{ product_id }}"
+          data-manual-rating="{{ manual_rating }}"
+          data-rating-count="{{ rating_count | escape }}"
+          {{ block.shopify_attributes }}
+          href="{{ item_url }}"
+        >
+          <div
+            class="fp-circle"
+            style="background: {{ item_circle }};"
+            aria-hidden="true"
+          >
+            {%- if block.settings.image != blank -%}
+              <img
+                src="{{ block.settings.image | image_url: width: 300 }}"
+                srcset="{{ block.settings.image | image_url: width: 150 }} 150w, {{ block.settings.image | image_url: width: 300 }} 300w"
+                sizes="{{ section.settings.circle_size }}px"
+                alt="{{ block.settings.image.alt | default: item_label | escape }}"
+                loading="lazy"
+                width="{{ section.settings.circle_size }}"
+                height="{{ section.settings.circle_size }}"
+              >
+            {%- elsif item_product != blank and item_product.featured_image != blank -%}
+              <img
+                src="{{ item_product.featured_image | image_url: width: 300 }}"
+                srcset="{{ item_product.featured_image | image_url: width: 150 }} 150w, {{ item_product.featured_image | image_url: width: 300 }} 300w"
+                sizes="{{ section.settings.circle_size }}px"
+                alt="{{ item_product.featured_image.alt | default: item_label | escape }}"
+                loading="lazy"
+                width="{{ section.settings.circle_size }}"
+                height="{{ section.settings.circle_size }}"
+              >
+            {%- elsif block.settings.emoji != blank -%}
+              <span class="fp-circle-placeholder" aria-hidden="true">{{ block.settings.emoji }}</span>
+            {%- endif -%}
+          </div>
+
+          <span class="fp-label" style="color: {{ section.settings.default_text }};">
+            {{ item_label }}
+          </span>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <!-- Detail panel -->
+  <div class="fp-detail" id="fp-detail-{{ section.id }}" aria-live="polite" aria-atomic="true">
+    <p class="fp-detail-name" id="fp-name-{{ section.id }}"></p>
+    <p class="fp-detail-sub"  id="fp-sub-{{ section.id }}"></p>
+    {%- if section.settings.show_price -%}
+      <p class="fp-detail-price" id="fp-price-{{ section.id }}"></p>
+    {%- endif -%}
+    <div id="fp-ratings-{{ section.id }}" class="fp-ratings-container"></div>
+  </div>
+
+  {%- if section.settings.show_hint -%}
+    <p class="fp-hint" id="fp-hint-{{ section.id }}">
+      {{ section.settings.hint_text | default: 'Hover to explore' }}
+    </p>
+  {%- endif -%}
+
+  {%- if section.settings.show_dots -%}
+    <div class="fp-dots" id="fp-dots-{{ section.id }}" aria-hidden="true">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'flavor' -%}
+          <button
+            class="fp-dot"
+            data-fp-dot
+            data-target="{{ forloop.index0 }}"
+            aria-label="Go to {{ block.settings.label | default: block.settings.product.title | escape }}"
+          ></button>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+  <div class="wave-divider-showcase">
+  <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+    <path 
+      d="M0,40 C240,100 480,0 720,40 C960,80 1200,20 1440,60 L1440,100 L0,100 Z" 
+      fill="#ffffff">
+    </path>
+  </svg>
+</div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  var sid     = '{{ section.id }}';
+  var root    = document.getElementById('gsp-fp-' + sid);
+  if (!root) return;
+
+  var wipe    = document.getElementById('fp-wipe-'   + sid);
+  var track   = document.getElementById('fp-track-'  + sid);
+  var detail  = document.getElementById('fp-detail-' + sid);
+  var nameEl  = document.getElementById('fp-name-'   + sid);
+  var subEl   = document.getElementById('fp-sub-'    + sid);
+  var priceEl = document.getElementById('fp-price-'  + sid);
+  var ratingsEl = document.getElementById('fp-ratings-' + sid);
+  var hintEl  = document.getElementById('fp-hint-'   + sid);
+  var eyebrow = document.getElementById('fp-eyebrow-'+ sid);
+  var heading = document.getElementById('fp-heading-'+ sid);
+  var dotsWrap= document.getElementById('fp-dots-'   + sid);
+
+  var items   = Array.from(root.querySelectorAll('[data-fp-item]'));
+  var dots    = dotsWrap ? Array.from(dotsWrap.querySelectorAll('[data-fp-dot]')) : [];
+
+  var activeIdx  = null;
+  var leaveTimer = null;
+
+  /* ── Build Ratings HTML ── */
+  function buildRatingsHTML(item) {
+    var showRatings = item.getAttribute('data-show-ratings') === 'true';
+    if (!showRatings) return '';
+
+    var useJudgeMe = item.getAttribute('data-use-judge-me') === 'true';
+    var productId = item.getAttribute('data-product-id');
+    var manualRating = parseInt(item.getAttribute('data-manual-rating'), 10);
+    var ratingCount = item.getAttribute('data-rating-count');
+
+    if (useJudgeMe && productId) {
+      return '<div class="jdgm-widget" data-product-id="' + productId + '"></div>';
+    }
+
+    if (!useJudgeMe && manualRating > 0) {
+      var starsHTML = '';
+      for (var i = 1; i <= 5; i++) {
+        var filled = i <= manualRating ? ' is-filled' : '';
+        starsHTML += '<span class="fp-star' + filled + '">★</span>';
+      }
+      var countHTML = ratingCount ? '<span class="fp-rating-count">(' + ratingCount + ')</span>' : '';
+      return '<div class="fp-manual-rating"><div class="fp-stars" aria-label="Rating: ' + manualRating + ' out of 5 stars">' + starsHTML + '</div>' + countHTML + '</div>';
+    }
+
+    return '';
+  }
+
+  /* ── Activate ── */
+  function activate(idx) {
+    if (activeIdx === idx) return;
+    activeIdx = idx;
+    clearTimeout(leaveTimer);
+
+    var item   = items[idx];
+    var bg     = item.getAttribute('data-bg');
+    var text   = item.getAttribute('data-text');
+    var accent = item.getAttribute('data-accent');
+    var name   = item.getAttribute('data-name');
+    var sub    = item.getAttribute('data-sub');
+    var price  = item.getAttribute('data-price');
+    var url    = item.getAttribute('data-url');
+
+    /* Wipe */
+    wipe.style.backgroundColor = bg;
+    wipe.classList.add('is-active');
+
+    /* Items */
+    items.forEach(function (el, i) {
+      el.classList.remove('is-active', 'is-inactive');
+      var label = el.querySelector('.fp-label');
+      if (i === idx) {
+        el.classList.add('is-active');
+        if (label) label.style.color = accent;
+      } else {
+        el.classList.add('is-inactive');
+        if (label) label.style.color = '';
+      }
+    });
+
+    /* Dots */
+    dots.forEach(function (d, i) {
+      d.classList.toggle('is-active', i === idx);
+      d.style.background = i === idx ? accent : '';
+    });
+
+    /* Eyebrow / heading tint */
+    if (eyebrow) eyebrow.style.color = accent;
+    if (heading) heading.style.color = text;
+
+    /* Detail */
+    if (nameEl)  { nameEl.textContent  = name;  nameEl.style.color  = text;   }
+    if (subEl)   { subEl.textContent   = sub;   subEl.style.color   = accent; }
+    if (priceEl) { priceEl.textContent = price; priceEl.style.color = text;   }
+    if (ratingsEl) {
+      ratingsEl.innerHTML = buildRatingsHTML(item);
+      ratingsEl.style.color = text;
+    }
+
+    setTimeout(function () {
+      detail.classList.add('is-visible');
+    }, 80);
+
+    if (hintEl) hintEl.classList.add('is-hidden');
+  }
+
+  /* ── Reset ── */
+  function reset() {
+    activeIdx = null;
+    wipe.classList.remove('is-active');
+
+    items.forEach(function (el) {
+      el.classList.remove('is-active', 'is-inactive');
+      var label = el.querySelector('.fp-label');
+      if (label) label.style.color = '';
+    });
+
+    dots.forEach(function (d) {
+      d.classList.remove('is-active');
+      d.style.background = '';
+    });
+
+    if (eyebrow) eyebrow.style.color = '';
+    if (heading) heading.style.color = '';
+
+    detail.classList.remove('is-visible');
+    if (ratingsEl) ratingsEl.innerHTML = '';
+    if (hintEl) hintEl.classList.remove('is-hidden');
+  }
+
+  /* ── Item events ── */
+  items.forEach(function (item, i) {
+    item.addEventListener('mouseenter', function () {
+      clearTimeout(leaveTimer);
+      activate(i);
+    });
+    item.addEventListener('mouseleave', function () {
+      leaveTimer = setTimeout(reset, 120);
+    });
+    /* Touch support */
+    item.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      clearTimeout(leaveTimer);
+      if (activeIdx === i) {
+        /* Second tap = navigate */
+        var url = item.getAttribute('data-url');
+        if (url && url !== '#') window.location.href = url;
+      } else {
+        activate(i);
+      }
+    }, { passive: false });
+  });
+
+  /* Stop reset when still inside track */
+  track.addEventListener('mouseleave', function () {
+    leaveTimer = setTimeout(reset, 120);
+  });
+  track.addEventListener('mouseenter', function () {
+    clearTimeout(leaveTimer);
+  });
+
+  /* ── Dot clicks ── */
+  dots.forEach(function (dot, i) {
+    dot.addEventListener('click', function () { activate(i); });
+  });
+
+  /* ── Shopify theme editor live reload ── */
+  if (Shopify && Shopify.designMode) {
+    document.addEventListener('shopify:block:select', function (e) {
+      var idx = items.findIndex(function (el) {
+        return el.dataset.shopifyEditorBlock === e.detail.blockId;
+      });
+      if (idx > -1) activate(idx);
+    });
+    document.addEventListener('shopify:section:deselect', reset);
+  }
+
+})();
+
+/* Load Judge Me Widget */
+(function() {
+  if (window.jdgm === undefined) {
+    window.jdgm = {};
+  }
+  var script = document.createElement('script');
+  script.src = 'https://cdn.judge.me/embed.js';
+  script.async = true;
+  document.head.appendChild(script);
+})();
+
+</script>
+
+{% schema %}
+{
+  "name": "GSP Flavor Picker",
+  "tag": "section",
+  "class": "gsp-flavor-picker",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "text",
+      "id": "section_aria_label",
+      "label": "Section aria label",
+      "default": "Product flavor picker"
+    },
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "default": "Our flavors"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find your flavor"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "range",
+      "id": "section_min_height",
+      "label": "Minimum section height",
+      "min": 300,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "range",
+      "id": "section_padding_v",
+      "label": "Top & bottom padding",
+      "min": 20,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "track_max_width",
+      "label": "Track max width",
+      "min": 400,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "item_gap",
+      "label": "Gap between items",
+      "min": 4,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Default colors (no hover)"
+    },
+    {
+      "type": "color",
+      "id": "default_bg",
+      "label": "Section background",
+      "default": "#f5f0e8"
+    },
+    {
+      "type": "color",
+      "id": "default_text",
+      "label": "Default text color",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "header",
+      "content": "Eyebrow & heading typography"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "label": "Eyebrow font size",
+      "min": 8,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 11
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_gap",
+      "label": "Eyebrow bottom gap",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading font size",
+      "min": 18,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading font weight",
+      "options": [
+        { "value": "300", "label": "Light" },
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "range",
+      "id": "heading_gap",
+      "label": "Heading bottom gap",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Circle / product image"
+    },
+    {
+      "type": "range",
+      "id": "circle_size",
+      "label": "Circle diameter",
+      "min": 48,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "select",
+      "id": "circle_img_fit",
+      "label": "Image fit inside circle",
+      "options": [
+        { "value": "cover",   "label": "Cover (crop to fill)" },
+        { "value": "contain", "label": "Contain (show full image)" }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "header",
+      "content": "Item label"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "Label font size",
+      "min": 8,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 11
+    },
+    {
+      "type": "range",
+      "id": "label_gap",
+      "label": "Label top gap",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "wipe_duration",
+      "label": "Background wipe speed",
+      "min": 200,
+      "max": 900,
+      "step": 50,
+      "unit": "ms",
+      "default": 550
+    },
+    {
+      "type": "range",
+      "id": "item_duration",
+      "label": "Item lift speed",
+      "min": 200,
+      "max": 900,
+      "step": 50,
+      "unit": "ms",
+      "default": 550
+    },
+    {
+      "type": "range",
+      "id": "lift_amount",
+      "label": "Active item lift distance",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "text",
+      "id": "scale_active",
+      "label": "Active item scale",
+      "default": "1.22",
+      "info": "e.g. 1.22 = 22% larger. Keep between 1.0 and 1.5."
+    },
+    {
+      "type": "range",
+      "id": "inactive_opacity",
+      "label": "Inactive item opacity",
+      "min": 10,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "text",
+      "id": "scale_inactive",
+      "label": "Inactive item scale",
+      "default": "0.88",
+      "info": "e.g. 0.88 = 12% smaller. Keep between 0.6 and 1.0."
+    },
+    {
+      "type": "header",
+      "content": "Detail panel"
+    },
+    {
+      "type": "range",
+      "id": "detail_gap",
+      "label": "Detail panel top gap",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "detail_name_size",
+      "label": "Product name font size",
+      "min": 14,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "select",
+      "id": "detail_name_weight",
+      "label": "Product name font weight",
+      "options": [
+        { "value": "300", "label": "Light" },
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "range",
+      "id": "detail_sub_size",
+      "label": "Tagline font size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show product price",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "detail_price_size",
+      "label": "Price font size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "CTA button"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button label",
+      "default": "Shop now"
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_arrow",
+      "label": "Show arrow icon",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "btn_font_size",
+      "label": "Button font size",
+      "min": 8,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 11
+    },
+    {
+      "type": "range",
+      "id": "btn_padding_v",
+      "label": "Button vertical padding",
+      "min": 4,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "btn_padding_h",
+      "label": "Button horizontal padding",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Extras"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hint",
+      "label": "Show hover hint text",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "hint_text",
+      "label": "Hint text",
+      "default": "Hover to explore"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show navigation dots",
+      "default": false
+    },
+    {
+      "label": "Wave bottom Color",
+      "type": "color",
+      "id": "wave_background_color",
+      "default": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "flavor",
+      "name": "Flavor / Product",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Product"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product (auto-fills name, price, URL)"
+        },
+        {
+          "type": "url",
+          "id": "custom_url",
+          "label": "Custom URL (overrides product URL)"
+        },
+        {
+          "type": "header",
+          "content": "Content overrides"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label (overrides product title)"
+        },
+        {
+          "type": "text",
+          "id": "tagline",
+          "label": "Tagline (overrides product description)",
+          "default": "A short, enticing description."
+        },
+        {
+          "type": "header",
+          "content": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Product image (overrides product media)"
+        },
+        {
+          "type": "text",
+          "id": "emoji",
+          "label": "Fallback emoji (if no image)",
+          "default": "✦"
+        },
+        {
+          "type": "header",
+          "content": "Colors"
+        },
+        {
+          "type": "color",
+          "id": "bg_color",
+          "label": "Wipe background color",
+          "default": "#c8392b"
+        },
+        {
+          "type": "color",
+          "id": "circle_bg",
+          "label": "Circle background color",
+          "default": "#e8312a20"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Primary text color (on wipe bg)",
+          "default": "#fff0ee"
+        },
+        {
+          "type": "color",
+          "id": "accent_color",
+          "label": "Accent color (label, tagline, dots)",
+          "default": "#ff8a7a"
+        },
+        {
+          "type": "header",
+          "content": "Ratings"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_ratings",
+          "label": "Show product ratings",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "use_judge_me_ratings",
+          "label": "Use Judge Me ratings (if unchecked, uses manual rating below)",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "manual_rating",
+          "label": "Manual star rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "rating_count",
+          "label": "Number of reviews (for manual rating)",
+          "default": "120"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "GSP Flavor Picker",
+      "settings": {
+        "eyebrow": "Our flavors",
+        "heading": "Find your flavor",
+        "default_bg": "#f5f0e8",
+        "default_text": "#1a1a1a",
+        "section_min_height": 480,
+        "circle_size": 80,
+        "lift_amount": 28,
+        "scale_active": "1.22",
+        "inactive_opacity": 30,
+        "scale_inactive": "0.88",
+        "cta_text": "Shop now",
+        "cta_arrow": true,
+        "show_hint": true,
+        "hint_text": "Hover to explore",
+        "show_dots": false
+      },
+      "blocks": [
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Vintage Cola",
+            "tagline": "Classic taste, better for you.",
+            "emoji": "🥤",
+            "bg_color": "#c8392b",
+            "circle_bg": "#c8392b20",
+            "text_color": "#fff0ee",
+            "accent_color": "#ff8a7a"
+          }
+        },
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Crisp Apple",
+            "tagline": "Fresh-picked orchard vibes.",
+            "emoji": "🍏",
+            "bg_color": "#3a7d44",
+            "circle_bg": "#3a7d4420",
+            "text_color": "#edfff0",
+            "accent_color": "#a8e6b0"
+          }
+        },
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Classic Grape",
+            "tagline": "Deep, juicy Concord grape.",
+            "emoji": "🍇",
+            "bg_color": "#6b3fa0",
+            "circle_bg": "#6b3fa020",
+            "text_color": "#f5eeff",
+            "accent_color": "#c9a8ff"
+          }
+        },
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Orange Cream",
+            "tagline": "Sunshine in every sip.",
+            "emoji": "🍊",
+            "bg_color": "#e07b39",
+            "circle_bg": "#e07b3920",
+            "text_color": "#fff5ee",
+            "accent_color": "#ffd0a8"
+          }
+        },
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Cream Soda",
+            "tagline": "Dreamy vanilla bubbles.",
+            "emoji": "🫧",
+            "bg_color": "#b05a8a",
+            "circle_bg": "#b05a8a20",
+            "text_color": "#fff0f8",
+            "accent_color": "#f7c0e0"
+          }
+        },
+        {
+          "type": "flavor",
+          "settings": {
+            "label": "Ginger Ale",
+            "tagline": "Warm ginger with a bright bite.",
+            "emoji": "✨",
+            "bg_color": "#b38a1a",
+            "circle_bg": "#b38a1a20",
+            "text_color": "#fffaee",
+            "accent_color": "#fce080"
+          }
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}

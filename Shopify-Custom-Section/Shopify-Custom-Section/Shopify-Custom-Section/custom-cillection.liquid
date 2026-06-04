@@ -1,0 +1,683 @@
+{% assign section_id = section.id %}
+{% assign s = section.settings %}
+
+<section class="wtm-section wtm-section--{{ section_id }}">
+  <div class="wtm-section__inner">
+
+    {% if s.heading != blank %}
+      <h2 class="wtm-section__title">{{ s.heading }}</h2>
+    {% endif %}
+
+    {% if s.show_tabs %}
+      <div class="wtm-tabs" role="tablist">
+        {% assign tab_blocks = section.blocks | where: 'type', 'tab' %}
+        {% assign tab_loop_index = 0 %}
+        {% for block in section.blocks %}
+          {% if block.type == 'tab' %}
+            {% assign is_first_tab = false %}
+            {% if tab_loop_index == 0 %}{% assign is_first_tab = true %}{% endif %}
+            {% assign tab_loop_index = tab_loop_index | plus: 1 %}
+            <button
+              class="wtm-tabs__btn {% if is_first_tab %}wtm-tabs__btn--active{% endif %}"
+              role="tab"
+              data-tab="{{ block.settings.tab_id }}"
+              aria-selected="{% if is_first_tab %}true{% else %}false{% endif %}"
+              {{ block.shopify_attributes }}
+            >{{ block.settings.tab_label }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% assign content_loop_index = 0 %}
+    {% for block in section.blocks %}
+      {% if block.type == 'tabcontent' %}
+        {% assign is_first_content = false %}
+        {% if content_loop_index == 0 %}{% assign is_first_content = true %}{% endif %}
+        {% assign content_loop_index = content_loop_index | plus: 1 %}
+        <div
+          class="wtm-grid {% if is_first_content %}wtm-grid--active{% endif %}"
+          data-tab-content="{{ block.settings.content_tab_id }}"
+          role="tabpanel"
+        >
+          {% for i in (1..4) %}
+            {% assign img_key   = 'item_' | append: i | append: '_image' %}
+            {% assign title_key = 'item_' | append: i | append: '_title' %}
+            {% assign desc_key  = 'item_' | append: i | append: '_description' %}
+            {% assign link_key  = 'item_' | append: i | append: '_link' %}
+            {% assign img   = block.settings[img_key] %}
+            {% assign title = block.settings[title_key] %}
+            {% assign desc  = block.settings[desc_key] %}
+            {% assign link  = block.settings[link_key] %}
+            {% if title != blank %}
+              <div class="wtm-card">
+                <a class="wtm-card__image-link" href="{{ link | default: '#' }}">
+                  <div class="wtm-card__image-wrap">
+                    {% if img != blank %}
+                      {{ img | image_url: width: 700 | image_tag: loading: 'lazy', class: 'wtm-card__img', alt: title }}
+                    {% else %}
+                      <div class="wtm-card__img-placeholder"></div>
+                    {% endif %}
+                  </div>
+                </a>
+                <div class="wtm-card__body">
+                  <a class="wtm-card__title" href="{{ link | default: '#' }}">{{ title }}</a>
+                  {% if desc != blank %}
+                    <p class="wtm-card__desc">{{ desc }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+  </div>
+</section>
+
+<style>
+  .wtm-section--{{ section_id }} {
+    background: {{ s.section_bg | default: '#ffffff' }};
+    padding: {{ s.padding_top | default: 40 }}px {{ s.side_padding | default: 20 }}px {{ s.padding_bottom | default: 40 }}px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-section__inner {
+    max-width: {{ s.max_width | default: 1440 }}px;
+    margin: 0 auto;
+  }
+
+  /* ── Title ── */
+  .wtm-section--{{ section_id }} .wtm-section__title {
+    font-size: {{ s.heading_size | default: 22 }}px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: {{ s.heading_color | default: '#111111' }};
+    margin: 0 0 16px;
+    line-height: 1.2;
+  }
+
+  /* ── Tabs ── */
+  .wtm-section--{{ section_id }} .wtm-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-tabs__btn {
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1.5px solid {{ s.tab_border_color | default: '#111111' }};
+    background: transparent;
+    color: {{ s.tab_text_color | default: '#111111' }};
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: inherit;
+    line-height: 1;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-tabs__btn--active {
+    background: {{ s.tab_active_bg | default: '#111111' }};
+    color: {{ s.tab_active_text | default: '#ffffff' }};
+    border-color: {{ s.tab_active_bg | default: '#111111' }};
+  }
+
+  .wtm-section--{{ section_id }} .wtm-tabs__btn:hover:not(.wtm-tabs__btn--active) {
+    background: {{ s.tab_border_color | default: '#111111' }};
+    color: {{ s.tab_active_text | default: '#ffffff' }};
+    opacity: 0.8;
+  }
+
+  /* ── Grid ── */
+  .wtm-section--{{ section_id }} .wtm-grid {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: {{ s.grid_gap | default: 12 }}px;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-grid--active {
+    display: grid;
+  }
+
+  /* ── Card ── */
+  .wtm-section--{{ section_id }} .wtm-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__image-link {
+    display: block;
+    text-decoration: none;
+    overflow: hidden;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__image-wrap {
+    width: 100%;
+    aspect-ratio: {{ s.image_ratio | default: '3/4' }};
+    overflow: hidden;
+    background: {{ s.image_bg | default: '#f0eeeb' }};
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__image-link:hover .wtm-card__img {
+    transform: scale(1.04);
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e5e3df;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__body {
+    padding: 14px 16px 0 0;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__title {
+    display: block;
+    font-size: {{ s.title_size | default: 14 }}px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: {{ s.card_title_color | default: '#111111' }};
+    text-decoration: none;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__title:hover {
+    text-decoration: underline;
+  }
+
+  .wtm-section--{{ section_id }} .wtm-card__desc {
+    font-size: {{ s.desc_size | default: 13 }}px;
+    color: {{ s.card_desc_color | default: '#555555' }};
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 400;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .wtm-section--{{ section_id }} .wtm-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: {{ s.grid_gap | default: 12 }}px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .wtm-section--{{ section_id }} .wtm-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .wtm-section--{{ section_id }} .wtm-section__title {
+      font-size: 18px;
+    }
+    .wtm-section--{{ section_id }} .wtm-tabs__btn {
+      font-size: 11px;
+      padding: 7px 14px;
+    }
+    .wtm-section--{{ section_id }} .wtm-card__body {
+      padding: 10px 8px 0 0;
+    }
+    .wtm-section--{{ section_id }} .wtm-card__title {
+      font-size: 11px;
+    }
+    .wtm-section--{{ section_id }} .wtm-card__desc {
+      font-size: 11px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .wtm-section--{{ section_id }} .wtm-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var section = document.querySelector('.wtm-section--{{ section_id }}');
+    if (!section) return;
+
+    var tabBtns   = section.querySelectorAll('.wtm-tabs__btn');
+    var tabPanels = section.querySelectorAll('[data-tab-content]');
+
+    function activateTab(targetId) {
+      tabBtns.forEach(function (b) {
+        b.classList.remove('wtm-tabs__btn--active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      tabPanels.forEach(function (p) {
+        p.classList.remove('wtm-grid--active');
+      });
+      var activeBtn   = section.querySelector('[data-tab="' + targetId + '"]');
+      var activePanel = section.querySelector('[data-tab-content="' + targetId + '"]');
+      if (activeBtn)   { activeBtn.classList.add('wtm-tabs__btn--active'); activeBtn.setAttribute('aria-selected', 'true'); }
+      if (activePanel) { activePanel.classList.add('wtm-grid--active'); }
+    }
+
+    // Activate first tab on load
+    if (tabBtns.length > 0) activateTab(tabBtns[0].dataset.tab);
+
+    tabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activateTab(btn.dataset.tab);
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Wait There's More",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "WAIT THERE'S MORE..."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tabs",
+      "label": "Show Tabs",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Container Max Width",
+      "min": 1000,
+      "max": 1920,
+      "step": 20,
+      "default": 1440,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding Top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding Bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "label": "Side Padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Gap Between Cards",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        { "value": "3/4", "label": "3:4 Portrait" },
+        { "value": "4/5", "label": "4:5 Tall" },
+        { "value": "1/1", "label": "1:1 Square" },
+        { "value": "4/3", "label": "4:3 Landscape" }
+      ],
+      "default": "3/4"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "image_bg",
+      "label": "Image Placeholder Background",
+      "default": "#f0eeeb"
+    },
+    {
+      "type": "color",
+      "id": "card_title_color",
+      "label": "Card Title Color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "card_desc_color",
+      "label": "Card Description Color",
+      "default": "#555555"
+    },
+    {
+      "type": "header",
+      "content": "Tab Colors"
+    },
+    {
+      "type": "color",
+      "id": "tab_border_color",
+      "label": "Tab Border Color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "tab_text_color",
+      "label": "Tab Text Color (inactive)",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "tab_active_bg",
+      "label": "Tab Active Background",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "tab_active_text",
+      "label": "Tab Active Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Section Heading Size",
+      "min": 12,
+      "max": 48,
+      "step": 1,
+      "default": 22,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Card Title Size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "desc_size",
+      "label": "Card Description Size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "default": 13,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tab",
+      "name": "Tab Button",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab Label",
+          "default": "GUIDES"
+        },
+        {
+          "type": "text",
+          "id": "tab_id",
+          "label": "Tab ID (must match Tab Content ID)",
+          "default": "guides"
+        }
+      ]
+    },
+    {
+      "type": "tabcontent",
+      "name": "Tab Content (4 Cards)",
+      "settings": [
+        {
+          "type": "text",
+          "id": "content_tab_id",
+          "label": "Tab ID (must match Tab Button ID)",
+          "default": "guides"
+        },
+        {
+          "type": "header",
+          "content": "Card 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "item_1_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "item_1_title",
+          "label": "Title",
+          "default": "THE GYMSHARK RUNNING HUB"
+        },
+        {
+          "type": "textarea",
+          "id": "item_1_description",
+          "label": "Description",
+          "default": "For every runner, every route, and every reason you lace up."
+        },
+        {
+          "type": "url",
+          "id": "item_1_link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Card 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "item_2_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "item_2_title",
+          "label": "Title",
+          "default": "LEGGINGS GUIDE"
+        },
+        {
+          "type": "textarea",
+          "id": "item_2_description",
+          "label": "Description",
+          "default": "Stop looking; start finding the leggings you've been looking for. However you train, whatever your look, we've got a match."
+        },
+        {
+          "type": "url",
+          "id": "item_2_link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Card 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "item_3_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "item_3_title",
+          "label": "Title",
+          "default": "SPORTS BRA GUIDE"
+        },
+        {
+          "type": "textarea",
+          "id": "item_3_description",
+          "label": "Description",
+          "default": "Find the one with high, medium and light-support sports bras more trustworthy and reliable than your ex."
+        },
+        {
+          "type": "url",
+          "id": "item_3_link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Card 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "item_4_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "item_4_title",
+          "label": "Title",
+          "default": "MEN'S SHORTS GUIDE"
+        },
+        {
+          "type": "textarea",
+          "id": "item_4_description",
+          "label": "Description",
+          "default": "Everything you need to know about the best gym shorts in the game, from repping, to running, to rest day."
+        },
+        {
+          "type": "url",
+          "id": "item_4_link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wait There's More",
+      "blocks": [
+        {
+          "type": "tab",
+          "settings": { "tab_label": "GUIDES",   "tab_id": "guides"   }
+        },
+        {
+          "type": "tab",
+          "settings": { "tab_label": "TRENDING", "tab_id": "trending" }
+        },
+        {
+          "type": "tab",
+          "settings": { "tab_label": "TRAINING", "tab_id": "training" }
+        },
+        {
+          "type": "tab",
+          "settings": { "tab_label": "APPS",     "tab_id": "apps"     }
+        },
+        {
+          "type": "tabcontent",
+          "settings": {
+            "content_tab_id": "guides",
+            "item_1_title": "THE GYMSHARK RUNNING HUB",
+            "item_1_description": "For every runner, every route, and every reason you lace up.",
+            "item_2_title": "LEGGINGS GUIDE",
+            "item_2_description": "Stop looking; start finding the leggings you've been looking for. However you train, whatever your look, we've got a match.",
+            "item_3_title": "SPORTS BRA GUIDE",
+            "item_3_description": "Find the one with high, medium and light-support sports bras more trustworthy and reliable than your ex.",
+            "item_4_title": "MEN'S SHORTS GUIDE",
+            "item_4_description": "Everything you need to know about the best gym shorts in the game, from repping, to running, to rest day."
+          }
+        },
+        {
+          "type": "tabcontent",
+          "settings": {
+            "content_tab_id": "trending",
+            "item_1_title": "WHAT'S HOT RIGHT NOW",
+            "item_1_description": "The pieces everyone is talking about this season.",
+            "item_2_title": "NEW ARRIVALS",
+            "item_2_description": "Fresh drops you won't want to miss.",
+            "item_3_title": "BEST SELLERS",
+            "item_3_description": "The styles that keep flying off the shelves.",
+            "item_4_title": "STAFF PICKS",
+            "item_4_description": "Hand-picked favourites from the team."
+          }
+        },
+        {
+          "type": "tabcontent",
+          "settings": {
+            "content_tab_id": "training",
+            "item_1_title": "BUILD MUSCLE",
+            "item_1_description": "Everything you need to pack on size the right way.",
+            "item_2_title": "LOSE FAT",
+            "item_2_description": "Smart strategies to shed fat and keep your hard-earned muscle.",
+            "item_3_title": "IMPROVE CARDIO",
+            "item_3_description": "From 5K to marathon — level up your endurance game.",
+            "item_4_title": "RECOVERY TIPS",
+            "item_4_description": "Rest smarter, train harder. Recovery is where gains are made."
+          }
+        },
+        {
+          "type": "tabcontent",
+          "settings": {
+            "content_tab_id": "apps",
+            "item_1_title": "GYMSHARK TRAINING",
+            "item_1_description": "Your pocket PT. Programs, workouts and tracking all in one place.",
+            "item_2_title": "GYMSHARK FOOD",
+            "item_2_description": "Fuel your training with meals that actually taste good.",
+            "item_3_title": "MINDSET TOOLS",
+            "item_3_description": "Build the mental edge every serious athlete needs.",
+            "item_4_title": "COMMUNITY",
+            "item_4_description": "Train with millions of people who get it."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
