@@ -1,0 +1,255 @@
+
+<style>
+  .custom-banner-{{ section.id }} {
+    background-color: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .custom-banner-wrapper-{{ section.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    {% if section.settings.image_position == 'left' %}
+      flex-direction: row-reverse;
+    {% else %}
+      flex-direction: row;
+    {% endif %}
+  }
+
+  .custom-banner-content-{{ section.id }} {
+    flex: 1 1 50%;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: {{ section.settings.text_alignment }};
+    align-items: {% if section.settings.text_alignment == 'left' %}flex-start{% elsif section.settings.text_alignment == 'right' %}flex-end{% else %}center{% endif %};
+  }
+
+  .custom-banner-image-box-{{ section.id }} {
+    flex: 1 1 50%;
+    display: flex;
+  }
+
+  .custom-banner-image-box-{{ section.id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .custom-banner-image-box-{{ section.id }} svg {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    fill: #ccc;
+  }
+
+  .cb-subheading-{{ section.id }} {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: inherit;
+  }
+
+  .cb-heading-{{ section.id }} {
+    font-size: 36px;
+    line-height: 1.2;
+    margin-bottom: 25px;
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .cb-description-{{ section.id }} {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 35px;
+    color: inherit;
+  }
+
+  .cb-button-{{ section.id }} {
+    display: inline-block;
+    background-color: {{ section.settings.btn_bg_color }};
+    color: {{ section.settings.btn_text_color }};
+    padding: 12px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 12px;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+    letter-spacing: 1px;
+  }
+
+  .cb-button-{{ section.id }}:hover {
+    opacity: 0.85;
+    transform: translateY(-2px);
+  }
+
+  /* Responsive styling */
+  @media (max-width: 768px) {
+    .custom-banner-wrapper-{{ section.id }} {
+      flex-direction: column-reverse !important; /* Mobile: text bottom, image top */
+    }
+
+    .cb-heading-{{ section.id }} {
+      font-size: 32px;
+    }
+
+    .custom-banner-content-{{ section.id }} {
+      padding: 50px 20px;
+      text-align: center;
+      align-items: center;
+    }
+  }
+</style>
+
+<div class="custom-banner-{{ section.id }}">
+  <div class="custom-banner-wrapper-{{ section.id }}">
+
+    <div class="custom-banner-content-{{ section.id }}">
+      {% if section.settings.subheading != blank %}
+        <div class="cb-subheading-{{ section.id }}">{{ section.settings.subheading }}</div>
+      {% endif %}
+
+      {% if section.settings.heading != blank %}
+        <h2 class="cb-heading-{{ section.id }}">{{ section.settings.heading | newline_to_br }}</h2>
+      {% endif %}
+
+      {% if section.settings.description != blank %}
+        <div class="cb-description-{{ section.id }}">{{ section.settings.description }}</div>
+      {% endif %}
+
+      {% if section.settings.button_text != blank %}
+        <a href="{{ section.settings.button_link }}" class="cb-button-{{ section.id }}">
+          {{ section.settings.button_text }}
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="custom-banner-image-box-{{ section.id }}">
+      {% if section.settings.right_image != blank %}
+        <img src="{{ section.settings.right_image | img_url: 'master' }}" alt="{{ section.settings.right_image.alt | default: section.settings.heading }}">
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Image with Text Banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "info": "Choose which side the image appears on",
+      "options": [
+        { "value": "right", "label": "Image Right / Text Left" },
+        { "value": "left", "label": "Image Left / Text Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Content Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#cc3a3a"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Taste the Best"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Main Heading",
+      "default": "The Home of Craft Sodas,\ndelivered to you chilled and ready to serve."
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Bottom Text / Description",
+      "default": "Original Flavours"
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "color",
+      "id": "btn_bg_color",
+      "label": "Button Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "btn_text_color",
+      "label": "Button Text Color",
+      "default": "#005a66"
+    },
+    {
+      "type": "header",
+      "content": "Image Element"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Banner Image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with Text Banner",
+      "category": "Custom Elements"
+    }
+  ]
+}
+{% endschema %}
