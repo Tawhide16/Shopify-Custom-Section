@@ -1,0 +1,934 @@
+{% comment %}
+  Brand Tabs Section — v2
+  • Unlimited brands via blocks (add as many as you want in theme editor)
+  • Mobile: tab nav is sticky (top:0) and scrolls horizontally, panels scroll normally
+  • Desktop: standard sticky tab nav below header
+{% endcomment %}
+
+<section class="brand-tabs-section" id="brand-tabs-{{ section.id }}">
+
+  <div class="brand-tabs__wrapper">
+
+    {% if section.settings.heading != blank %}
+      <div class="brand-tabs__header">
+        <h2 class="brand-tabs__title">{{ section.settings.heading }}</h2>
+        {% if section.settings.subheading != blank %}
+          <p class="brand-tabs__subtitle">{{ section.settings.subheading }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Sticky Tab Navigation -->
+    <div class="brand-tabs__nav-sticky-wrap" id="bt-nav-wrap-{{ section.id }}">
+      <div class="brand-tabs__nav" role="tablist" aria-label="Brand Tabs" id="bt-nav-{{ section.id }}">
+        {% for block in section.blocks %}
+          {% if block.type == 'brand' %}
+            <button
+              class="brand-tabs__nav-btn{% if forloop.first %} is-active{% endif %}"
+              role="tab"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-controls="brand-panel-{{ block.id }}"
+              id="brand-tab-{{ block.id }}"
+              data-brand="{{ block.id }}"
+              {{ block.shopify_attributes }}
+            >
+              {% if block.settings.brand_logo != blank %}
+                <img
+                  src="{{ block.settings.brand_logo | image_url: width: 240 }}"
+                  alt="{{ block.settings.brand_name | escape }} logo"
+                  class="brand-tabs__nav-logo"
+                  loading="lazy"
+                >
+              {% else %}
+                <span class="brand-tabs__nav-label">{{ block.settings.brand_name | default: 'Brand' }}</span>
+              {% endif %}
+              <span class="brand-tabs__nav-indicator"></span>
+            </button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Tab Panels -->
+    <div class="brand-tabs__panels">
+      {% for block in section.blocks %}
+        {% if block.type == 'brand' %}
+          {%- assign brand_collection = collections[block.settings.brand_collection] -%}
+
+          <div
+            class="brand-tabs__panel{% if forloop.first %} is-active{% endif %}"
+            id="brand-panel-{{ block.id }}"
+            role="tabpanel"
+            aria-labelledby="brand-tab-{{ block.id }}"
+            {% unless forloop.first %}hidden{% endunless %}
+          >
+
+            {% if brand_collection != blank %}
+              {%- assign products_limit = section.settings.products_per_tab | default: 4 -%}
+              {%- assign brand_products = brand_collection.products | limit: products_limit -%}
+
+              {% if brand_products.size > 0 %}
+                <div class="brand-tabs__grid">
+                  {% for product in brand_products %}
+                    {%- assign card_id = 'btc-' | append: block.id | append: '-' | append: forloop.index -%}
+                    <div class="brand-tabs__product-card" id="{{ card_id }}">
+
+                      <div class="brand-tabs__card-header">
+                        <span class="brand-tabs__card-category">
+                          {{- product.type | default: block.settings.brand_name | upcase -}}
+                        </span>
+                        <div class="brand-tabs__card-nav" aria-label="Image navigation">
+                          <button class="brand-tabs__card-nav-btn" data-dir="prev" data-card="{{ card_id }}" aria-label="Previous image">&#8592;</button>
+                          <button class="brand-tabs__card-nav-btn" data-dir="next" data-card="{{ card_id }}" aria-label="Next image">&#8594;</button>
+                        </div>
+                      </div>
+
+                      <a href="{{ product.url }}" class="brand-tabs__card-image-wrap" aria-label="{{ product.title }}">
+                        <div class="brand-tabs__card-track" data-track="{{ card_id }}">
+                          {% if product.images.size > 0 %}
+                            {% for img in product.images limit: 5 %}
+                              <div class="brand-tabs__card-slide">
+                                <img
+                                  src="{{ img | image_url: width: 600 }}"
+                                  alt="{{ img.alt | escape | default: product.title }}"
+                                  class="brand-tabs__card-image"
+                                  loading="lazy"
+                                  width="600"
+                                  height="{{ 600 | divided_by: img.aspect_ratio | round }}"
+                                >
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <div class="brand-tabs__card-slide">
+                              <div class="brand-tabs__card-image-placeholder">
+                                {{ 'product-1' | placeholder_svg_tag: 'brand-tabs__placeholder-svg' }}
+                              </div>
+                            </div>
+                          {% endif %}
+                        </div>
+
+                        {% if product.images.size > 1 %}
+                          <div class="brand-tabs__card-dots" data-dots="{{ card_id }}">
+                            {% for img in product.images limit: 5 %}
+                              <span class="brand-tabs__card-dot{% if forloop.first %} is-active{% endif %}"></span>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+
+                        {% if product.compare_at_price > product.price %}
+                          <span class="brand-tabs__badge brand-tabs__badge--sale">
+                            {{- 'products.product.on_sale' | t | default: 'Sale' -}}
+                          </span>
+                        {% endif %}
+                        {% unless product.available %}
+                          <span class="brand-tabs__badge brand-tabs__badge--sold-out">
+                            {{- 'products.product.sold_out' | t | default: 'Sold Out' -}}
+                          </span>
+                        {% endunless %}
+                      </a>
+
+                      <div class="brand-tabs__card-footer">
+                        <div class="brand-tabs__card-info">
+                          <h3 class="brand-tabs__card-title">
+                            <a href="{{ product.url }}" class="brand-tabs__card-title-link">{{ product.title }}</a>
+                          </h3>
+                          <div class="brand-tabs__card-price">
+                            {% if product.compare_at_price > product.price %}
+                              <span class="brand-tabs__price brand-tabs__price--sale">{{ product.price | money }}</span>
+                              <span class="brand-tabs__price brand-tabs__price--compare">{{ product.compare_at_price | money }}</span>
+                            {% else %}
+                              <span class="brand-tabs__price">{{ product.price | money }}</span>
+                            {% endif %}
+                          </div>
+                        </div>
+
+                        {% if section.settings.show_add_to_cart %}
+                          <div class="brand-tabs__card-actions">
+                            {% if product.available %}
+                              {% if product.variants.size == 1 %}
+                                <form action="/cart/add" method="post">
+                                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                                  <input type="hidden" name="quantity" value="1">
+                                  <button type="submit" class="brand-tabs__btn-cart">
+                                    {{- 'products.product.add_to_cart' | t | default: 'Add to Cart' -}}
+                                  </button>
+                                </form>
+                              {% else %}
+                                <a href="{{ product.url }}" class="brand-tabs__btn-cart brand-tabs__btn-cart--select">
+                                  {{- 'products.product.select_options' | t | default: 'Select Options' -}}
+                                </a>
+                              {% endif %}
+                            {% else %}
+                              <button class="brand-tabs__btn-cart" disabled>
+                                {{- 'products.product.sold_out' | t | default: 'Sold Out' -}}
+                              </button>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                      </div>
+
+                    </div>
+                  {% endfor %}
+                </div>
+
+              {% else %}
+                <div class="brand-tabs__empty">
+                  <p>{{ 'collections.general.no_matches' | t | default: 'No products found for this brand.' }}</p>
+                </div>
+              {% endif %}
+
+            {% else %}
+              <div class="brand-tabs__empty">
+                <p>No collection assigned for <strong>{{ block.settings.brand_name }}</strong>. Please configure it in the theme editor.</p>
+              </div>
+            {% endif %}
+
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  #brand-tabs-{{ section.id }} {
+    --bt-bg:           {{ section.settings.bg_color }};
+    --bt-accent:       {{ section.settings.accent_color }};
+    --bt-text:         {{ section.settings.text_color }};
+    --bt-muted:        {{ section.settings.muted_color }};
+    --bt-card-bg:      {{ section.settings.card_bg_color }};
+    --bt-border:       {{ section.settings.border_color }};
+    --bt-radius:       {{ section.settings.border_radius }}px;
+    --bt-columns:      {{ section.settings.products_per_row }};
+    --bt-nav-bg:       {{ section.settings.bg_color }};
+    background-color: var(--bt-bg);
+    padding: {{ section.settings.section_padding_top }}px 0 {{ section.settings.section_padding_bottom }}px;
+    font-family: inherit;
+  }
+
+  .brand-tabs__wrapper {
+    max-width: {{ section.settings.max_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .brand-tabs__header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .brand-tabs__title {
+    font-family: inherit;
+    font-size: clamp(1.75rem, 3vw, 36px);
+    font-weight: 700;
+    color: var(--bt-text);
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .brand-tabs__subtitle {
+    font-family: inherit;
+    font-size: 1.05rem;
+    color: var(--bt-muted);
+    margin: 0 auto;
+    max-width: 540px;
+    line-height: 1.6;
+  }
+
+  /* ── Sticky Nav Wrapper ──────────────────────────── */
+  .brand-tabs__nav-sticky-wrap {
+    top: 0;
+    z-index: 50;
+    background: var(--bt-nav-bg);
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+
+  /* ── Tab Nav ─────────────────────────────────────── */
+  .brand-tabs__nav {
+    display: flex;
+    flex-wrap: nowrap;               /* never wrap — always single row */
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-bottom: 1px solid var(--bt-border);
+    margin-bottom: 36px;
+    gap: 0;
+    /* fade edges to hint scrollability */
+    -webkit-mask-image: linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+  }
+
+  .brand-tabs__nav::-webkit-scrollbar { display: none; }
+
+  .brand-tabs__nav-btn {
+    position: relative;
+    flex-shrink: 0;                  /* never shrink — key for scroll */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 14px 24px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--bt-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+    bottom: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    white-space: nowrap;
+  }
+
+  .brand-tabs__nav-btn:hover { color: var(--bt-text); }
+  .brand-tabs__nav-btn.is-active { color: var(--bt-text); }
+
+  /* Logo in tab */
+  .brand-tabs__nav-logo {
+    display: block;
+    height: {{ section.settings.logo_height }}px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+    filter: grayscale(1) opacity(0.45);
+    transition: filter 0.2s ease;
+  }
+
+  .brand-tabs__nav-btn:hover .brand-tabs__nav-logo,
+  .brand-tabs__nav-btn.is-active .brand-tabs__nav-logo {
+    filter: grayscale(0) opacity(1);
+  }
+
+  .brand-tabs__nav-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--bt-text);
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+  }
+
+  .brand-tabs__nav-btn.is-active .brand-tabs__nav-indicator {
+    transform: scaleX(1);
+  }
+
+  /* ── Panel ───────────────────────────────────────── */
+  .brand-tabs__panel {
+    animation: btFadeIn 0.3s ease forwards;
+  }
+
+  @keyframes btFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Product Grid ────────────────────────────────── */
+  .brand-tabs__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--bt-columns), 1fr);
+    gap: 1px;
+    border: 1px solid var(--bt-border);
+    align-items: stretch;
+  }
+
+  /* ── Product Card ────────────────────────────────── */
+  .brand-tabs__product-card {
+    background: var(--bt-card-bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--bt-border);
+    border-bottom: 1px solid var(--bt-border);
+  }
+
+  .brand-tabs__product-card:hover .brand-tabs__card-image {
+    transform: scale(1.03);
+  }
+
+  .brand-tabs__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--bt-border);
+    flex-shrink: 0;
+    height: 40px;
+    box-sizing: border-box;
+  }
+
+  .brand-tabs__card-category {
+    font-family: inherit;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--bt-muted);
+    text-transform: uppercase;
+  }
+
+  .brand-tabs__card-nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .brand-tabs__card-nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--bt-muted);
+    padding: 2px 5px;
+    line-height: 1;
+    border-radius: 3px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .brand-tabs__card-nav-btn:hover {
+    color: var(--bt-text);
+    background: var(--bt-border);
+  }
+
+  .brand-tabs__card-image-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f5f5f5;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .brand-tabs__card-track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .brand-tabs__card-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .brand-tabs__card-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    padding: 10px;
+    box-sizing: border-box;
+    transition: transform 0.5s ease;
+  }
+
+  .brand-tabs__card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-tabs__placeholder-svg {
+    width: 55%;
+    height: 55%;
+    opacity: 0.25;
+  }
+
+  .brand-tabs__card-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    z-index: 1;
+  }
+
+  .brand-tabs__card-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.2);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .brand-tabs__card-dot.is-active {
+    background: var(--bt-text);
+    transform: scale(1.3);
+  }
+
+  .brand-tabs__badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: inherit;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 2px;
+    line-height: 1.4;
+    z-index: 1;
+  }
+
+  .brand-tabs__badge--sale     { background: var(--bt-accent); color: #fff; }
+  .brand-tabs__badge--sold-out { background: #333; color: #fff; }
+
+  .brand-tabs__card-footer {
+    padding: 12px 14px;
+    border-top: 1px solid var(--bt-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-shrink: 0;
+    min-height: 64px;
+    box-sizing: border-box;
+  }
+
+  .brand-tabs__card-info { flex: 1; min-width: 0; }
+
+  .brand-tabs__card-title {
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--bt-text);
+    margin: 0 0 4px;
+    line-height: 1.3;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .brand-tabs__card-title-link { color: inherit; text-decoration: none; }
+  .brand-tabs__card-title-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .brand-tabs__card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .brand-tabs__price {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bt-text);
+  }
+
+  .brand-tabs__price--sale    { color: var(--bt-accent); }
+  .brand-tabs__price--compare {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--bt-muted);
+    text-decoration: line-through;
+  }
+
+  .brand-tabs__card-actions { flex-shrink: 0; }
+
+  .brand-tabs__btn-cart {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    background: var(--bt-text);
+    color: var(--bt-bg);
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid var(--bt-text);
+    border-radius: calc(var(--bt-radius) - 2px);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .brand-tabs__btn-cart:hover:not(:disabled) { background: transparent; color: var(--bt-text); }
+  .brand-tabs__btn-cart:disabled {
+    background: var(--bt-border);
+    border-color: var(--bt-border);
+    color: var(--bt-muted);
+    cursor: not-allowed;
+  }
+
+  .brand-tabs__btn-cart--select {
+    background: transparent;
+    color: var(--bt-text);
+    border: 1px solid var(--bt-border);
+  }
+
+  .brand-tabs__btn-cart--select:hover {
+    background: var(--bt-text);
+    color: var(--bt-bg);
+    border-color: var(--bt-text);
+  }
+
+  .brand-tabs__empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: inherit;
+    color: var(--bt-muted);
+    border: 1px dashed var(--bt-border);
+    border-radius: var(--bt-radius);
+    font-size: 0.95rem;
+  }
+
+  /* ── Responsive ──────────────────────────────────── */
+
+  @media screen and (max-width: 1024px) {
+    #brand-tabs-{{ section.id }} {
+      --bt-columns: {{ section.settings.products_per_row | minus: 1 | at_least: 2 }};
+    }
+    .brand-tabs__wrapper { padding: 0 16px; }
+    .brand-tabs__nav-sticky-wrap { margin: 0 -16px; padding: 0 16px; }
+  }
+
+  @media screen and (max-width: 768px) {
+    #brand-tabs-{{ section.id }} {
+      --bt-columns: 2;
+      padding-top:    {{ section.settings.section_padding_top | times: 0.65 | round }}px;
+      padding-bottom: {{ section.settings.section_padding_bottom | times: 0.65 | round }}px;
+    }
+
+    .brand-tabs__wrapper { padding: 0 16px; }
+    .brand-tabs__nav-sticky-wrap { margin: 0 -16px; padding: 0 16px; }
+
+    .brand-tabs__title {
+      font-size: clamp(1.4rem, 5vw, 1.9rem);
+      margin-bottom: 8px;
+    }
+
+    .brand-tabs__subtitle { font-size: 0.92rem; }
+    .brand-tabs__header   { margin-bottom: 24px; }
+
+    .brand-tabs__nav {
+      margin-bottom: 20px;
+    }
+
+    .brand-tabs__nav-btn {
+      font-size: 0.72rem;
+      padding: 10px 16px;
+      min-height: 44px;
+    }
+
+    .brand-tabs__nav-logo { height: 20px; max-width: 68px; }
+
+    .brand-tabs__card-header  { padding: 8px 10px; height: 36px; }
+    .brand-tabs__card-category { font-size: 0.58rem; }
+
+    .brand-tabs__card-nav-btn {
+      font-size: 0.72rem;
+      padding: 3px 6px;
+      min-width: 28px;
+      min-height: 28px;
+    }
+
+    .brand-tabs__card-footer {
+      flex-direction: row;
+      align-items: center;
+      padding: 10px;
+      min-height: 56px;
+      gap: 6px;
+    }
+
+    .brand-tabs__btn-cart { padding: 7px 10px; font-size: 0.65rem; }
+    .brand-tabs__card-title { font-size: 0.78rem; }
+    .brand-tabs__price { font-size: 0.78rem; }
+    .brand-tabs__empty { padding: 40px 16px; font-size: 0.85rem; }
+  }
+
+  @media screen and (max-width: 480px) {
+    #brand-tabs-{{ section.id }} { --bt-columns: 1; }
+
+    .brand-tabs__card-footer { padding: 12px 14px; min-height: 60px; }
+    .brand-tabs__card-title  { font-size: 0.88rem; }
+    .brand-tabs__price       { font-size: 0.85rem; }
+    .brand-tabs__btn-cart    { padding: 8px 14px; font-size: 0.7rem; }
+  }
+
+  @media screen and (max-width: 360px) {
+    .brand-tabs__nav-btn  { padding: 8px 12px; font-size: 0.65rem; }
+    .brand-tabs__nav-logo { height: 18px; max-width: 56px; }
+    .brand-tabs__btn-cart { padding: 7px 10px; font-size: 0.62rem; }
+  }
+</style>
+
+<script>
+  (function () {
+    var sectionEl = document.getElementById('brand-tabs-{{ section.id }}');
+    if (!sectionEl) return;
+
+    // ── Tab switching ──────────────────────────────────
+    var navBtns = sectionEl.querySelectorAll('.brand-tabs__nav-btn');
+    var panels  = sectionEl.querySelectorAll('.brand-tabs__panel');
+
+    navBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = btn.getAttribute('data-brand');
+
+        navBtns.forEach(function (b) {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach(function (p) {
+          p.classList.remove('is-active');
+          p.setAttribute('hidden', '');
+        });
+
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+
+        var activePanel = document.getElementById('brand-panel-' + target);
+        if (activePanel) {
+          activePanel.classList.add('is-active');
+          activePanel.removeAttribute('hidden');
+        }
+
+        // Scroll active tab into view (center) when clicking
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
+    });
+
+    // ── Card image slider ──────────────────────────────
+    sectionEl.querySelectorAll('.brand-tabs__card-nav-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var cardId = btn.getAttribute('data-card');
+        var dir    = btn.getAttribute('data-dir');
+        var track  = sectionEl.querySelector('[data-track="' + cardId + '"]');
+        var dotsEl = sectionEl.querySelector('[data-dots="' + cardId + '"]');
+        if (!track) return;
+
+        var slides  = track.querySelectorAll('.brand-tabs__card-slide');
+        var total   = slides.length;
+        if (total <= 1) return;
+
+        var current = parseInt(track.getAttribute('data-index') || '0', 10);
+        current = dir === 'next'
+          ? (current + 1) % total
+          : (current - 1 + total) % total;
+
+        track.setAttribute('data-index', current);
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+
+        if (dotsEl) {
+          dotsEl.querySelectorAll('.brand-tabs__card-dot').forEach(function (dot, i) {
+            dot.classList.toggle('is-active', i === current);
+          });
+        }
+      });
+    });
+
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Brand Tabs",
+  "tag": "section",
+  "class": "brand-tabs-section-wrapper",
+  "max_blocks": 20,
+  "blocks": [
+    {
+      "type": "brand",
+      "name": "Brand",
+      "settings": [
+        {
+          "type": "text",
+          "id": "brand_name",
+          "label": "Brand Name",
+          "default": "Brand"
+        },
+        {
+          "type": "image_picker",
+          "id": "brand_logo",
+          "label": "Brand Logo (optional — shown in tab)"
+        },
+        {
+          "type": "collection",
+          "id": "brand_collection",
+          "label": "Brand Collection"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop By Brand"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Premium outdoor footwear from the world's leading brands."
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Brand logo height in tab (px)",
+      "min": 18,
+      "max": 60,
+      "step": 2,
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Product Display"
+    },
+    {
+      "type": "range",
+      "id": "products_per_tab",
+      "label": "Products per brand tab",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "products_per_row",
+      "label": "Products per row (desktop)",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_add_to_cart",
+      "label": "Show Add to Cart button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max section width (px)",
+      "min": 960,
+      "max": 1600,
+      "step": 40,
+      "default": 1280
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Padding top (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Padding bottom (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Card corner radius (px)",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent / sale color",
+      "default": "#1a6b3c"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Primary text",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "muted_color",
+      "label": "Muted / secondary text",
+      "default": "#888888"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e5e5e5"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand Tabs",
+      "category": "Collection",
+      "blocks": [
+        { "type": "brand", "settings": { "brand_name": "Meindl" } },
+        { "type": "brand", "settings": { "brand_name": "Scarpa" } },
+        { "type": "brand", "settings": { "brand_name": "Salomon" } },
+        { "type": "brand", "settings": { "brand_name": "Lowa" } },
+        { "type": "brand", "settings": { "brand_name": "Merrell" } },
+        { "type": "brand", "settings": { "brand_name": "Zamberlan" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
